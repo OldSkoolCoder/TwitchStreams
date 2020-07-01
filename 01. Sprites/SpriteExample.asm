@@ -35,8 +35,10 @@ start:
 
     lda #60
     sta SP0X
-    sta SP0Y
     sta SP0X + 2
+
+    lda #80
+    sta SP0Y
     sta SP0Y + 2
 
     lda #0
@@ -59,6 +61,8 @@ GameLooper:
     cmp RASTER              // Compare A to current raster line
     bne GameLooper
 
+    inc $D020
+
     inc FrameCounter
     lda FrameCounter
     cmp #32
@@ -76,10 +80,14 @@ KeyboardTest:
 
 TestForDKey:
     cmp #scanCode_D
-    bne GameLooper
+    bne GameLooperEnd
     lda #1
     sta QuazzyDirection
     jmp UpdateQuazzy
+
+GameLooperEnd:
+    dec $D020
+    jmp GameLooper
 
 // --------------------------------------------------------------
 UpdateQuazzy:
@@ -99,7 +107,7 @@ UpdateQuazzy:
 
     inc SP0X
     inc SP0X + 2
-    jmp GameLooper
+    jmp GameLooperEnd
 
 GoingLeft:
     // Quazzy Going Left
@@ -114,7 +122,7 @@ GoingLeft:
 
     dec SP0X
     dec SP0X + 2
-    jmp GameLooper
+    jmp GameLooperEnd
 
 // ----------------------------------------------------------------
 
@@ -128,7 +136,7 @@ CalculateSpriteFrame:
     rts
 
 HELLOWORLD:
-    .text "HELLO WORLD"  // the string to print
+    .text "HELLO, MY NAME IS QUAZZY OSBOURNE :)"  // the string to print
     .byte 00             // The terminator character
 
 * = $2A80 "Sprite Date"
