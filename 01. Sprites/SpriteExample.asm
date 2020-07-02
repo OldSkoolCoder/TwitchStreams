@@ -7,9 +7,23 @@ BasicUpstart2(start)
 .label QuazzyDirection = $02A7
 .label FrameCounter = $02A8
 .label SpriteFrameCounter = $02A9
+.label Jumping = $02AA
+.label JumpIndex = $02AB
 
 .label QuazzyRight = 170
 .label QuazzyLeft = 174
+.label QuazzyJumpRight = 186
+
+JumpArk:
+    //.byte 0, 2, 4, 8, 12, 18, 18, 12,  8,  4,  2,  0
+    //.byte 0,   2,  2,  4,  4,  6,  0,249,251,251,253,253 
+      .byte 0, 254,254,252,252,250,  0,  6,  6,  4,  2,  0 
+
+JumpAnimationRight:
+    .byte 186, 187, 187, 188, 188, 188, 189, 189, 189, 190, 190, 191
+
+JumpAnimationLeft:
+    .byte 192, 193, 193, 194, 194, 194, 195, 195, 195, 196, 196, 197
 
 start:
     lda #147
@@ -55,6 +69,7 @@ start:
 
     lda #0
     sta FrameCounter
+    sta Jumping
 
 GameLooper:
     lda #240                // Scanline -> A
@@ -66,9 +81,15 @@ GameLooper:
     inc FrameCounter
     lda FrameCounter
     cmp #32
-    bne KeyboardTest
+    bne JumpingTest
     lda #0
     sta FrameCounter
+
+JumpingTest:
+    lda Jumping
+    cmp #1
+    bne KeyboardTest
+    jsr JumpCycle
 
 KeyboardTest:
     lda 197
@@ -80,10 +101,17 @@ KeyboardTest:
 
 TestForDKey:
     cmp #scanCode_D
-    bne GameLooperEnd
+    bne TestForLKey
     lda #1
     sta QuazzyDirection
     jmp UpdateQuazzy
+
+TestForLKey:
+    cmp #scanCode_L
+    bne GameLooperEnd
+    lda #1
+    sta Jumping
+    jmp GameLooperEnd
 
 GameLooperEnd:
     dec $D020
@@ -94,6 +122,9 @@ UpdateQuazzy:
     jsr CalculateSpriteFrame
     lda QuazzyDirection
     bmi GoingLeft
+    lda Jumping
+    cmp #1
+    beq !+
 
     // Quazzy Going Right
     lda #QuazzyRight
@@ -105,12 +136,17 @@ UpdateQuazzy:
     adc SpriteFrameCounter
     sta SPRITE0
 
+!:
     inc SP0X
     inc SP0X + 2
     jmp GameLooperEnd
 
 GoingLeft:
     // Quazzy Going Left
+    lda Jumping
+    cmp #1
+    beq !+
+
     lda #QuazzyLeft
     clc
     adc SpriteFrameCounter
@@ -120,6 +156,7 @@ GoingLeft:
     adc SpriteFrameCounter
     sta SPRITE0
 
+!:
     dec SP0X
     dec SP0X + 2
     jmp GameLooperEnd
@@ -135,9 +172,51 @@ CalculateSpriteFrame:
     sta SpriteFrameCounter
     rts
 
+JumpCycle:
+    lda FrameCounter
+    beq !+
+    cmp #8
+    beq !+
+    cmp #16
+    beq !+
+    cmp #24
+    beq !+
+    rts
+!:
+    inc JumpIndex
+    ldx JumpIndex
+    cpx #12
+    beq !EndJump+
+    lda SP0Y
+    clc
+    adc JumpArk,x 
+    sta SP0Y
+    sta SP0Y + 2
+
+    lda QuazzyDirection
+    bmi LeftAni
+    lda JumpAnimationRight,x 
+    jmp !+
+
+LeftAni:
+    lda JumpAnimationLeft,x 
+!:
+    sta SPRITE0 + 1
+    clc
+    adc #12
+    sta SPRITE0
+    rts
+
+!EndJump:
+    lda #0
+    sta JumpIndex
+    sta Jumping
+    rts
+
 HELLOWORLD:
     .text "HELLO, MY NAME IS QUAZZY OSBOURNE :)"  // the string to print
     .byte 00             // The terminator character
 
 * = $2A80 "Sprite Date"
 .import binary "sprites.bin"
+.import binary "spritesJumping.bin"
