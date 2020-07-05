@@ -9,10 +9,12 @@ BasicUpstart2(start)
 .label SpriteFrameCounter = $02A9
 .label Jumping = $02AA
 .label JumpIndex = $02AB
+.label JoystickState = $02AC
 
 .label QuazzyRight = 170
 .label QuazzyLeft = 174
 .label QuazzyJumpRight = 186
+.label EsmeraldaBase = 210
 
 JumpArk:
     //.byte 0, 2, 4, 8, 12, 18, 18, 12,  8,  4,  2,  0
@@ -39,32 +41,46 @@ start:
     lda #SPRITERAM
     sta SPRITE0 + 1
 
-    lda #3      // %0000 0011
+    lda #SPRITERAM + 40
+    sta SPRITE0 + 3
+
+    lda #SPRITERAM + 48
+    sta SPRITE0 + 2
+
+
+    lda #15      // %0000 1111
     sta SPENA
 //    sta YXPAND
 //    sta XXPAND
 
-    lda #2      // %0000 0010
+    lda #10      // %0000 1010
     sta SPMC
 
     lda #60
     sta SP0X
     sta SP0X + 2
+    lda #200
+    sta SP0X + 4
+    sta SP0X + 6
 
     lda #80
     sta SP0Y
     sta SP0Y + 2
+    sta SP0Y + 4
+    sta SP0Y + 6
 
     lda #0
     sta SP0COL
-
-    lda #10
-    sta SP0COL + 1
+    sta SP0COL + 2
 
     lda #9
-    sta SPMC0
+    sta SP0COL + 1
+    sta SP0COL + 3
 
     lda #5
+    sta SPMC0
+
+    lda #10
     sta SPMC1
 
     lda #0
@@ -92,6 +108,7 @@ JumpingTest:
     jsr JumpCycle
 
 KeyboardTest:
+    jsr UpdateEsmeralda
     lda 197
     cmp #scanCode_A
     bne TestForDKey
@@ -108,14 +125,56 @@ TestForDKey:
 
 TestForLKey:
     cmp #scanCode_L
+    bne TestForJoystick
+    lda #1
+    sta Jumping
+    jmp GameLooperEnd    
+
+TestForJoystick:
+    lda CIAPRA
+    eor #%11111111
+    sta JoystickState
+    and #joystickLeft
+    cmp #joystickLeft
+    bne !TestRight+
+    lda #255
+    sta QuazzyDirection
+    jmp UpdateQuazzy
+
+!TestRight:
+    lda JoystickState
+    and #joystickRight
+    cmp #joystickRight
+    bne !TestUp+
+    lda #1
+    sta QuazzyDirection
+    jmp UpdateQuazzy
+
+!TestUp:
+    lda JoystickState
+    and #joystickUp
+    cmp #joystickUp
     bne GameLooperEnd
     lda #1
     sta Jumping
-    jmp GameLooperEnd
+    jmp UpdateQuazzy
 
 GameLooperEnd:
     dec $D020
     jmp GameLooper
+
+// --------------------------------------------------------------
+UpdateEsmeralda:
+    jsr CalculateSpriteFrame
+    lda #EsmeraldaBase
+    clc
+    adc SpriteFrameCounter
+    sta SPRITE0 + 3
+    lda #EsmeraldaBase + 8
+    clc
+    adc SpriteFrameCounter
+    sta SPRITE0 + 2
+    rts
 
 // --------------------------------------------------------------
 UpdateQuazzy:
@@ -218,5 +277,6 @@ HELLOWORLD:
     .byte 00             // The terminator character
 
 * = $2A80 "Sprite Date"
-.import binary "sprites.bin"
+.import binary "spritesV2.bin"
 .import binary "spritesJumping.bin"
+.import binary "buxumwave.bin"

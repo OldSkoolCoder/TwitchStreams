@@ -198,3 +198,8 @@
 .const scanCode_RUNSTOP = 63
 .const scanCode_NO_KEY = 64
 
+.const joystickUp       = %00000001
+.const joystickDown     = %00000010
+.const joystickLeft     = %00000100
+.const joystickRight    = %00001000
+.const joystickFire     = %00010000
