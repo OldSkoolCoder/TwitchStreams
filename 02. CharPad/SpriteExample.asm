@@ -1,11 +1,4 @@
-#import "Constants.asm"
-
-//====================================================================
-BasicUpstart2(start)
-
-.label PRINT_LINE   = $AB1E
 .label QuazzyDirection = $02A7
-.label FrameCounter = $02A8
 .label SpriteFrameCounter = $02A9
 .label Jumping = $02AA
 .label JumpIndex = $02AB
@@ -31,14 +24,7 @@ JumpAnimationLeft:
     //.byte 192, 193, 193, 194, 194, 194, 195, 195, 195, 196, 196, 197
     .byte 190, 190, 190, 191, 191, 191, 192, 192, 192, 193, 193, 193
 
-start:
-    lda #147
-    jsr krljmp_CHROUT
-
-    lda #<HELLOWORLD    // Grab Lo Byte of Hello World Location
-    ldy #>HELLOWORLD    // Grab Hi Byte of Hello World Location
-    jsr PRINT_LINE      // Print The Line
-
+SpriteInitRoutine:
     lda #SPRITERAM + 8
     sta SPRITE0
 
@@ -63,15 +49,20 @@ start:
     lda #60
     sta SP0X
     sta SP0X + 2
-    lda #200
+    lda #25
     sta SP0X + 4
     sta SP0X + 6
 
-    lda #80
+    lda #175
     sta SP0Y
     sta SP0Y + 2
+    lda #67
     sta SP0Y + 4
     sta SP0Y + 6
+
+    lda #%00001100
+    sta MSIGX
+    sta SPBGPR
 
     lda #0
     sta SP0COL
@@ -90,22 +81,10 @@ start:
     lda #0
     sta FrameCounter
     sta Jumping
+    rts
 
-GameLooper:
-    lda #240                // Scanline -> A
-    cmp RASTER              // Compare A to current raster line
-    bne GameLooper
 
-    inc $D020
-
-    inc FrameCounter
-    lda FrameCounter
-    cmp #32
-    bne JumpingTest
-    lda #0
-    sta FrameCounter
-
-JumpingTest:
+SpriteControl:
     lda Jumping
     cmp #1
     bne KeyboardTest
@@ -164,8 +143,7 @@ TestForJoystick:
     jmp UpdateQuazzy
 
 GameLooperEnd:
-    dec $D020
-    jmp GameLooper
+    rts
 
 // --------------------------------------------------------------
 UpdateEsmeralda:
@@ -228,6 +206,7 @@ GoingLeft:
 
 CalculateSpriteFrame:
     lda FrameCounter
+    and #$1F
     lsr  // /2
     lsr  // /4
     lsr  // /8
@@ -237,6 +216,7 @@ CalculateSpriteFrame:
 
 JumpCycle:
     lda FrameCounter
+    and #$1F
     beq !+
     cmp #6
     beq !+
@@ -278,12 +258,5 @@ LeftAni:
     sta Jumping
     rts
 
-HELLOWORLD:
-    .text "HELLO, MY NAME IS QUAZZY OSBOURNE :)"  // the string to print
-    .byte 00             // The terminator character
-
-* = $2A80 "Sprite Date"
+* = $6A80 "Sprite Date"
 .import binary "spritesV3.bin"
-//.import binary "spritesV2.bin"
-//.import binary "spritesJumping.bin"
-//.import binary "buxumwave.bin"
