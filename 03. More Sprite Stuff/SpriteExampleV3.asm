@@ -31,6 +31,17 @@ JumpAnimationLeft:
     //.byte 192, 193, 193, 194, 194, 194, 195, 195, 195, 196, 196, 197
     .byte 190, 190, 190, 191, 191, 191, 192, 192, 192, 193, 193, 193
 
+QuazzyX:
+    .byte 0,0                // Quazzy : Lo Byte , Hi Byte
+EsmereldaX:
+    .byte 0,0                // Esmerelda
+
+QuazzyY:
+    .byte 0                // Quazzy : Lo Byte , Hi Byte
+EsmereldaY:
+    .byte 0                // Esmerelda
+
+
 start:
     lda #147
     jsr krljmp_CHROUT
@@ -61,17 +72,13 @@ start:
     sta SPMC
 
     lda #60
-    sta SP0X
-    sta SP0X + 2
+    sta QuazzyX
     lda #200
-    sta SP0X + 4
-    sta SP0X + 6
+    sta EsmereldaX
 
     lda #80
-    sta SP0Y
-    sta SP0Y + 2
-    sta SP0Y + 4
-    sta SP0Y + 6
+    sta QuazzyY
+    sta EsmereldaY
 
     lda #0
     sta SP0COL
@@ -164,6 +171,42 @@ TestForJoystick:
     jmp UpdateQuazzy
 
 GameLooperEnd:
+    ldy #0
+    lda QuazzyX + 1
+    ldx QuazzyX
+    jsr UpdateSpritesX
+
+    ldy #1
+    lda QuazzyX + 1
+    ldx QuazzyX
+    jsr UpdateSpritesX
+
+    ldy #2
+    lda EsmereldaX + 1
+    ldx EsmereldaX
+    jsr UpdateSpritesX
+
+    ldy #3
+    lda EsmereldaX + 1
+    ldx EsmereldaX
+    jsr UpdateSpritesX
+
+    ldy #0
+    ldx QuazzyY
+    jsr UpdateSpritesY
+
+    ldy #1
+    ldx QuazzyY
+    jsr UpdateSpritesY
+
+    ldy #2
+    ldx EsmereldaY
+    jsr UpdateSpritesY
+
+    ldy #3
+    ldx EsmereldaY
+    jsr UpdateSpritesY
+
     dec $D020
     jmp GameLooper
 
@@ -200,15 +243,14 @@ UpdateQuazzy:
     sta SPRITE0
 
 !:
-    inc SP0X
-    inc SP0X + 2
-    bne !DoNothing+
+    clc
+    lda QuazzyX
+    adc #3
+    sta QuazzyX
+    lda QuazzyX + 1
+    adc #0
+    sta QuazzyX + 1
 
-    lda MSIGX
-    ora #%00000011
-    sta MSIGX
-
-!DoNothing:
     jmp GameLooperEnd
 
 GoingLeft:
@@ -227,16 +269,15 @@ GoingLeft:
     sta SPRITE0
 
 !:
-    dec SP0X
-    dec SP0X + 2
-    bne !DoNothing+
+    sec
+    lda QuazzyX
+    sbc #3
+    sta QuazzyX
+    lda QuazzyX + 1
+    sbc #0
+    sta QuazzyX + 1
 
-    lda MSIGX
-    and #%11111100
-    sta MSIGX
-
-!DoNothing:
-   jmp GameLooperEnd
+    jmp GameLooperEnd
 
 // ----------------------------------------------------------------
 
@@ -266,11 +307,10 @@ JumpCycle:
     ldx JumpIndex
     cpx #12
     beq !EndJump+
-    lda SP0Y
+    lda QuazzyY
     clc
     adc JumpArk,x 
-    sta SP0Y
-    sta SP0Y + 2
+    sta QuazzyY
 
     lda QuazzyDirection
     bmi LeftAni
@@ -290,6 +330,59 @@ LeftAni:
     lda #0
     sta JumpIndex
     sta Jumping
+    rts
+
+SpriteMask:
+    .byte %00000001         // Sprite 0
+    .byte %00000010
+    .byte %00000100
+    .byte %00001000
+    .byte %00010000
+    .byte %00100000
+    .byte %01000000
+    .byte %10000000         // Sprite 7
+
+UpdateSpritesX:
+    // Y = Sprite Index
+    // Acc = Hi Byte
+    // X : Lo Byte
+
+    pha     // Store Hi Byte on Stack For Later
+    tya     // Transfer Sprite Number To Acc
+    pha     // Store On Stack For Laters
+    asl     // * 2
+    tay     // put into Y for X Indexing
+    txa     // Get Lo Byte
+    sta SP0X,Y      // Store in Sprite X Lo
+
+    pla     // Getting Back Sprite Number
+    tay     // Transfer To Y
+
+    lda #$FF
+    eor SpriteMask,y    // Make Inverse Mask %00001000 => %11110111
+    and MSIGX           // Clearing Out MSBit
+    sta MSIGX           // Store Back.
+
+    pla     // Bringing Back The Hi Byte
+    //cmp #0  // Is it Zero
+    beq !DoNothing+ // If So, Do nothing
+
+    lda MSIGX       // Hi Byte is 1
+    ora SpriteMask,y    // Set Most Sig Bit Of SpriteX
+    sta MSIGX       // Store Back
+
+!DoNothing:
+    rts
+
+UpdateSpritesY:
+    // Y = Sprite Index
+    // X : Y Byte
+
+    tya     // Transfer Sprite Number To Acc
+    asl     // * 2
+    tay     // put into Y for X Indexing
+    txa     // Get Y Byte
+    sta SP0Y,Y      // Store in Sprite X Lo
     rts
 
 HELLOWORLD:
