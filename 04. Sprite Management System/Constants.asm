@@ -1,3 +1,5 @@
+#importonce
+
 //===============================================================================
 // $00-$FF  PAGE .label Zero (256 bytes)
  
@@ -25,6 +27,7 @@
 // $0200-$9FFF  RAM (40K)
 
 .label SCREENRAM       = $0400
+.label COLORRAM        = $D800
 .label SPRITE0         = $07F8
 
 // $0801
@@ -65,8 +68,8 @@
 .label SPMC0           = $D025
 .label SPMC1           = $D026
 .label SP0COL          = $D027
-.label FRELO1          = $D400 //(54272)
 
+.label FRELO1          = $D400 //(54272)
 .label FREHI1          = $D401 //(54273)
 .label PWLO1           = $D402 //(54274)
 .label PWHI1           = $D403 //(54275)
@@ -87,8 +90,8 @@
 .label VCREG3          = $D412 //(54290)
 .label ATDCY3          = $D413 //(54291)
 .label SUREL3          = $D414 //(54292)
-.label SIGVOL          = $D418 //(54296)      
-.label COLORRAM        = $D800
+.label SIGVOL          = $D418 //(54296)  
+
 .label CIAPRA          = $DC00
 .label CIAPRB          = $DC01
 

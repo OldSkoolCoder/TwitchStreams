@@ -75,36 +75,36 @@ start:
 
     ldy #1 
     lda #1 
-    jsr libSprites.SetMulticolour
+    jsr libSprites.SetMulticolour       // Enable Multi Colour for Sprite 1
 
     ldy #3 
     lda #1 
-    jsr libSprites.SetMulticolour
+    jsr libSprites.SetMulticolour       // Enable Multi Colour for Sprite 3
 
     ldy #0
     lda #1
-    jsr libSprites.SetPriority
+    jsr libSprites.SetPriority          // Enable Priority for Sprite 0
     ldy #1  
     lda #1
-    jsr libSprites.SetPriority
+    jsr libSprites.SetPriority          // Enable Priority for Sprite 1
 
     ldy #2
     lda #3
-    jsr libSprites.SetExpand
+    jsr libSprites.SetExpand            // Enable Expand for Sprite 2
     ldy #3  
     lda #3
-    jsr libSprites.SetExpand
+    jsr libSprites.SetExpand            // Enable Expand for Sprite 2
 
 
-    ldx #60
-    lda #0
+    ldx #60                         // X Lo
+    lda #0                          // X Hi
     ldy #0
     jsr libSprites.SetX             // Set Sprite 0 X Values
     ldx #1
     jsr libSprites.CopyX            // Copy Sprite 0 to Sprite 1
 
-    ldx #200                        
-    lda #0
+    ldx #200                        // X Lo
+    lda #0                          // X Hi
     ldy #2
     jsr libSprites.SetX             // Set Sprite 2 X Values
     ldx #3
@@ -116,6 +116,7 @@ start:
     ldx #1
     jsr libSprites.CopyY            // Copy Sprite 0 to Sprite 1
 
+    lda #80
     ldy #2
     jsr libSprites.SetY             // Set Sprite 2 X Values
     ldx #3
@@ -123,21 +124,19 @@ start:
 
     ldy #0 
     lda #0
-    jsr libSprites.SetColour
+    jsr libSprites.SetColour        // Set Colout For Sprite 0
     iny
     iny
-    jsr libSprites.SetColour
-//    sta SP0COL
-//    sta SP0COL + 2
+    lda #0
+    jsr libSprites.SetColour        // Set Colout For Sprite 2
 
     lda #9
     ldy #1 
-    jsr libSprites.SetColour
+    jsr libSprites.SetColour        // Set Colout For Sprite 1
     iny
     iny
-    jsr libSprites.SetColour
-    //sta SP0COL + 1
-    //sta SP0COL + 3
+    lda #9
+    jsr libSprites.SetColour        // Set Colout For Sprite 3
 
     lda #5
     sta SPMC0
@@ -223,6 +222,7 @@ TestForJoystick:
 
 GameLooperEnd:
     dec $D020
+    jsr libSprites.UpdateSprites
     jmp GameLooper
 
 // --------------------------------------------------------------
@@ -264,8 +264,8 @@ UpdateQuazzy:
     jsr libSprites.SetFrame             // Set Sprite 0 Frame
 
 !:
-    lda #0
-    ldx #3
+    lda #0                              // X Hi
+    ldx #3                              // X Lo
     ldy #0
     jsr libSprites.AddToX               // Update Sprite 0 X
     ldx #1
@@ -292,8 +292,8 @@ GoingLeft:
     jsr libSprites.SetFrame             // Set Sprite 0 Frame
 
 !:
-    lda #0
-    ldx #3
+    lda #0                              // X Hi
+    ldx #3                              // X Lo
     ldy #0
     jsr libSprites.SubFromX             // Update Sprite 0 X
     ldx #1
@@ -334,7 +334,7 @@ JumpCycle:
     bmi !SubY+
 
     tax
-    lda #0
+    lda #0                              // Y
     ldy #0
     jsr libSprites.AddToY
 
@@ -366,9 +366,11 @@ JumpCycle:
 LeftAni:
     lda JumpAnimationLeft,x 
 !:
+    pha                                 // Temp Store Away
     ldy #1
     jsr libSprites.SetFrame             // Set Sprite 1 Frame 
 
+    pla                                 // Pull back Temp 
     clc
     adc #8
     ldy #0

@@ -6,8 +6,8 @@
 .namespace libSprites 
 {
     .const MaximumNoOfSprites = 8
-    .const XPandX = %00000001 
-    .const XPandY = %00000010
+    .label XPandX = %00000001 
+    .label XPandY = %00000010
 
     SpriteMask:
         .byte %00000001
@@ -27,7 +27,7 @@
     msmFrameChanged:    .byte %00010000         // Frame
     msmPriorityChanged: .byte %00100000         // Priority
     msmXPandChanged:    .byte %01000000         // Expanded
-                        .byte %10000000
+        .byte %10000000
 
     Enabled:    .fill MaximumNoOfSprites, 0    
     XFrac:      .fill MaximumNoOfSprites, 0    
@@ -57,15 +57,16 @@
     //                          6
     // Frac = 0.5 + .25 + .125 = 
 
-//*************************************************************************************************************
     SetEnable:
     {
         // Y = SpriteNumber, Acc = Disable (0) / Enabled (1)
 
         sta Enabled,y           // Store Enabled iinto the Sprite Array
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+
+        //jsr libSprites.ApplyEnable
         rts
 
     }
@@ -90,14 +91,14 @@
         rts
     }
 
-//*************************************************************************************************************
     SetFrame:
     {
         // Y = Sprite Number, Acc = Frame
         sta Frame,y             // Set Frame into Array
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyFrame
         rts
     }
 
@@ -109,7 +110,6 @@
         rts
     }
 
-//*************************************************************************************************************
     SetY:
     {
         // Y = Sprite Number, Acc = Y Value
@@ -119,8 +119,9 @@
         lda #0
         sta YFrac,y             // Reset The Fraction
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyY
         rts
     }
 
@@ -136,8 +137,9 @@
         adc Y,y                 // Add Y 
         sta Y,y 
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyY
         rts
     }
 
@@ -158,8 +160,9 @@
         sbc Workspace,y         // Subtract Y
         sta Y,y 
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyY
         rts
 
     }
@@ -178,8 +181,9 @@
         txa
         tay 
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,x 
+        //jsr libSprites.ApplyY
         rts 
 
     }
@@ -196,7 +200,6 @@
         rts
     }
 
-//*************************************************************************************************************
     SetX:
     {
         // Y = Sprite Number, Acc = XHi Value, X = XLo
@@ -208,8 +211,9 @@
         lda #0              
         sta XFrac,y         // Reset The Fraction
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyX
         rts
     }
 
@@ -229,8 +233,9 @@
         adc #0              // Add XHi
         sta XHi,y 
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyX
         rts
     }
 
@@ -255,8 +260,9 @@
         sbc #0              // Subtract XHi
         sta XHi,y 
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyX
         rts
 
     }
@@ -278,8 +284,9 @@
         txa
         tay 
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,x 
+        //jsr libSprites.ApplyX
         rts 
 
     }
@@ -310,15 +317,15 @@
         rts
     }
 
-//*************************************************************************************************************
     SetMulticolour:
     {
         // Y = SpriteNumber, Acc = Disable (0) / Enabled (1)
 
-        sta MColMode,y          // Store MultiColour into the Sprite Array
+        sta MColMode,y           // Store Enabled iinto the Sprite Array
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyMultiColour
         rts
 
     }
@@ -326,32 +333,32 @@
     ApplyMultiColour:
     {
         // Y = SpriteNumber
-        ldx MColMode,y         // Load MultiColour Flag From Array
-        lda SpriteMask,y       // Load Sprite Mask
-        cpx #0                 // Disabled?
-        beq !Disable+          // Yes
+        ldx MColMode,y           // Load Enabled Flag From Array
+        lda SpriteMask,y        // Load Sprite Mask
+        cpx #0                  // Disabled?
+        beq !Disable+           // Yes
 
-        ora SPMC               // Or Mask onto Sprite MultiColour Byte
+        ora SPMC               // Or Mask onto Sprite Enabled Byte
         jmp !Done+
 
     !Disable:
-        eor #$FF               // Filter the Mask Bits 0->1 / 1->0
+        eor #$FF                // Flit the Mask Bits 0->1 / 1->0
         and SPMC               // Mask Off the Sprite Bit
 
     !Done:
-        sta SPMC               // Store result back into Sprite MultiColour
+        sta SPMC               // Store result back into Sprite Enabled
         rts
     }
 
-//*************************************************************************************************************
     SetPriority:
     {
         // Y = SpriteNumber, Acc = InFront (0) / Behind (1)
 
-        sta Priority,y          // Store Priority into the Sprite Array
+        sta Priority,y           // Store Enabled iinto the Sprite Array
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyPriority
         rts
 
     }
@@ -359,32 +366,32 @@
     ApplyPriority:
     {
         // Y = SpriteNumber
-        ldx Priority,y          // Load Priority Flag From Array
+        ldx Priority,y           // Load Enabled Flag From Array
         lda SpriteMask,y        // Load Sprite Mask
-        cpx #0                  // Infront Of Screen?
-        beq !InFrontOfScreen+   // Yes
+        cpx #0                  // Disabled?
+        beq !Disable+           // Yes
 
-        ora SPBGPR              // Or Mask onto Sprite Priority Byte
+        ora SPBGPR               // Or Mask onto Sprite Enabled Byte
         jmp !Done+
 
-    !InFrontOfScreen:
+    !Disable:
         eor #$FF                // Flit the Mask Bits 0->1 / 1->0
-        and SPBGPR              // Mask Off the Sprite Bit
+        and SPBGPR               // Mask Off the Sprite Bit
 
     !Done:
-        sta SPBGPR              // Store result back into Sprite Priority
+        sta SPBGPR               // Store result back into Sprite Enabled
         rts
     }
 
-//*************************************************************************************************************
     SetExpand:
     {
         // Y = SpriteNumber, Acc = 0,1,2 or 3 (Normal, XBig, YBig, Both)
 
-        sta Expand,y            // Store Expanded into the Sprite Array
+        sta Expand,y           // Store Enabled iinto the Sprite Array
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyExpand
         rts
 
     }
@@ -393,87 +400,86 @@
     {
         // Y = SpriteNumber,    00 = None, 01=XBig, 10=YBig, 11=Both
         lda SpriteMask,y        // Load Sprite Mask
-        eor #$FF                // Filter the Mask Bits 0->1 / 1->0
-        and XXPAND              // Mask Off the Sprite Bit
+        eor #$FF                // Flit the Mask Bits 0->1 / 1->0
+        and XXPAND               // Mask Off the Sprite Bit
         sta XXPAND
 
         lda SpriteMask,y        // Load Sprite Mask
-        eor #$FF                // Filter the Mask Bits 0->1 / 1->0
-        and YXPAND              // Mask Off the Sprite Bit
+        eor #$FF                // Flit the Mask Bits 0->1 / 1->0
+        and YXPAND               // Mask Off the Sprite Bit
         sta YXPAND
 
-        lda Expand,y            // Load Expand Flag From Array
-        and #XPandX             // And with X Xpand Flag
-        cmp #XPandX             // Are we left with Xpand Flag
-        bne !XPandY+            // no 
+        lda Expand,y            // Load Enabled Flag From Array
+        and #libSprites.XPandX
+        cmp #libSprites.XPandX
+        bne !XPandY+
 
         lda SpriteMask,y        // Load Sprite Mask
-        ora XXPAND              // Or Mask onto Sprite Expand X Byte
+        ora XXPAND               // Or Mask onto Sprite Enabled Byte
         sta XXPAND
 
     !XPandY:
-        lda Expand,y            // Load Expand Flag From Array
-        and #XPandY             // And with Y Xpand Flag
-        cmp #XPandY             // Are we left with Xpand Flag
-        bne !Done+              // no
+        lda Expand,y            // Load Enabled Flag From Array
+        and #libSprites.XPandY
+        cmp #libSprites.XPandY
+        bne !Done+
 
         lda SpriteMask,y        // Load Sprite Mask
-        ora YXPAND              // Or Mask onto Sprite Expand Y Byte
+        ora YXPAND               // Or Mask onto Sprite Enabled Byte
         sta YXPAND
 
     !Done:
         rts
     }
 
-//*************************************************************************************************************
     SetColour:
     {
         // Y = Sprite Number, Acc = Sprite Colour
-        sta Colour,y            // Set Colour into Array
+        sta Colour,y             // Set Frame into Array
 
-        lda #1                  // Load Modified Flag
-        sta Modified,y          // Specified Sprite has been Modified
+        lda #1 
+        sta Modified,y 
+        //jsr libSprites.ApplyColour
         rts
     }
 
     ApplyColour:
     {
         // Y = Sprite Number
-        lda Colour,y            // Load Colour from array
-        sta SP0COL,y            // Store in Sprite Colour
+        lda Colour,y             // Load Frame from array
+        sta SP0COL,y           // Store in Sprite Pointer
         rts
     }
 
-//*************************************************************************************************************
     UpdateSprites:
     {
         lda #0 
-        sta CurrentSprite           // Initialise Sprite Counter
+        sta CurrentSprite
 
         !UpdateSpriteLoop:
-            ldy CurrentSprite       // Load Sprite Counter
+            ldy CurrentSprite
 
-            lda Modified,y          // Load sprite been modified Flag
-            cmp #1                  // Has this sprite been modified
-            bne !NoNeedToProcess+   // No, then no need to update
+            lda Modified,y 
+            cmp #1 
+            bne !NoNeedToProcess+
 
-            jsr ApplyEnable         // Apply the Enabled Flag
-            jsr ApplyFrame          // Apply the Frame
-            jsr ApplyY              // Apply where on the Y axis
-            jsr ApplyX              // Apply where on the X Axis
-            jsr ApplyMultiColour    // Set Multi Colour Mode
-            jsr ApplyPriority       // Set Priority
-            jsr ApplyExpand         // Set whether its big or not
-            jsr ApplyColour         // Apply Colour
+            jsr ApplyEnable
+            jsr ApplyFrame
+            jsr ApplyY
+            jsr ApplyX
+            jsr ApplyMultiColour
+            jsr ApplyPriority
+            jsr ApplyExpand
+            jsr ApplyColour
 
-            lda #0                  // Reset Modified Flag
+            lda #0 
             sta Modified,y
 
         !NoNeedToProcess:
-            iny                     // Next Sprite
-            sty CurrentSprite       // Store Away
-            cpy #MaximumNoOfSprites // Have we reached the Maximum
-            bcc !UpdateSpriteLoop-  // No, better do it again then
+            iny
+            sty CurrentSprite
+            cpy #MaximumNoOfSprites
+            bcc !UpdateSpriteLoop-
         rts
     }
 }
