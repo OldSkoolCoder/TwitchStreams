@@ -3,6 +3,15 @@
 //--------------------------------------------------------------------------------------------------------
 // Library of functions to apply to sprites for anything.
 
+    .const libSprite_ONDEMAND = 1 
+    .const libSprite_CONSTANT = 0 
+
+    .const libSprite_INACTIVE = 0 
+    .const libSprite_ACTIVE = 1 
+
+    .const libSprite_ONCE = 0 
+    .const libSprite_LOOPING = 1 
+
 .namespace libSprites 
 {
     .const MaximumNoOfSprites = 8
@@ -10,14 +19,14 @@
     .const XPandY = %00000010
 
     SpriteMask:
-        .byte %00000001
-        .byte %00000010
-        .byte %00000100
-        .byte %00001000
-        .byte %00010000
-        .byte %00100000
-        .byte %01000000
-        .byte %10000000
+        .byte %00000001                         // Sprite 0
+        .byte %00000010                         // Sprite 1
+        .byte %00000100                         // Sprite 2
+        .byte %00001000                         // Sprite 3
+        .byte %00010000                         // Sprite 4
+        .byte %00100000                         // Sprite 5
+        .byte %01000000                         // Sprite 6
+        .byte %10000000                         // Sprite 7
 
     ModifiedSpriteMask:
     msmXChanged:        .byte %00000001         // X has Changed
@@ -41,6 +50,25 @@
     Priority:   .fill MaximumNoOfSprites, 0    
     Expand:     .fill MaximumNoOfSprites, 0     // 0 = Normal, 1 = X Big, 2 = Y Big, 3 = Both  
 
+    .namespace Animation
+    {
+        Active:     .fill MaximumNoOfSprites, 0    
+
+        // QuazzyMCLeft: .byte 4,5,6,7
+        // QuazzyHRLeft: .byte 12,13,14,15
+
+        FrameTableLo:       .fill MaximumNoOfSprites, 0    
+        FrameTableHi:       .fill MaximumNoOfSprites, 0    
+        CurrentFrameIndex:  .fill MaximumNoOfSprites, 0    
+        Delay:              .fill MaximumNoOfSprites, 0    
+        Speed:              .fill MaximumNoOfSprites, 0    
+        Looping:            .fill MaximumNoOfSprites, 0    
+        NumberOfFrames:     .fill MaximumNoOfSprites, 0
+        OnDemand:           .fill MaximumNoOfSprites, 0    
+//        Priority:   .fill MaximumNoOfSprites, 0    
+//        Priority:   .fill MaximumNoOfSprites, 0    
+//        Priority:   .fill MaximumNoOfSprites, 0    
+    }
     Modified:   .fill MaximumNoOfSprites, 0    
 
     Workspace: .fill MaximumNoOfSprites, 0  
@@ -58,6 +86,26 @@
     // Frac = 0.5 + .25 + .125 = 
 
 //*************************************************************************************************************
+    SpriteEnable:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+
+        lda #1
+        jsr SetEnable
+        rts
+    }
+
+    SpriteDisable:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #0
+        jsr SetEnable
+        rts
+    }
+
     SetEnable:
     {
         // Y = SpriteNumber, Acc = Disable (0) / Enabled (1)
@@ -311,7 +359,27 @@
     }
 
 //*************************************************************************************************************
-    SetMulticolour:
+    SpriteMultiColour:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #1
+        jsr SetMultiColour
+        rts
+    }
+
+    SpriteStandardColour:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #0
+        jsr SetMultiColour
+        rts
+    }
+
+    SetMultiColour:
     {
         // Y = SpriteNumber, Acc = Disable (0) / Enabled (1)
 
@@ -344,6 +412,26 @@
     }
 
 //*************************************************************************************************************
+    SpriteInFront:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #0
+        jsr SetPriority
+        rts
+    }
+
+    SpriteBehind:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #1
+        jsr SetPriority
+        rts
+    }
+
     SetPriority:
     {
         // Y = SpriteNumber, Acc = InFront (0) / Behind (1)
@@ -377,6 +465,46 @@
     }
 
 //*************************************************************************************************************
+    SpriteSmall:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #0
+        jsr SetExpand
+        rts
+    }
+
+    SpriteLargeX:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #1
+        jsr SetExpand
+        rts
+    }
+
+    SpriteLargeY:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #2
+        jsr SetExpand
+        rts
+    }
+
+    SpriteLarge:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #3
+        jsr SetExpand
+        rts
+    }
+
     SetExpand:
     {
         // Y = SpriteNumber, Acc = 0,1,2 or 3 (Normal, XBig, YBig, Both)
@@ -426,6 +554,166 @@
     }
 
 //*************************************************************************************************************
+    SpriteColourBlack:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #BLACK
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourWhite:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #WHITE
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourRed:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #RED
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourCyan:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #CYAN
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourPurple:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #PURPLE
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourGreen:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #GREEN
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourBlue:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #BLUE
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourYellow:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #YELLOW
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourOrange:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #ORANGE
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourBrown:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #BROWN
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourLightRed:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #LIGHT_RED
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourDarkGrey:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #DARK_GREY
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourGrey:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #GREY
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourLightGreen:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #LIGHT_GREEN
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourLightBlue:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #LIGHT_BLUE
+        jsr SetColour
+        rts
+    }
+
+    SpriteColourLightGrey:
+    {
+        // Inputs : Y = Sprite Number (0-7)
+        // Data Destroyed : Acc
+        
+        lda #LIGHT_GREY
+        jsr SetColour
+        rts
+    }
+
     SetColour:
     {
         // Y = Sprite Number, Acc = Sprite Colour
@@ -446,6 +734,9 @@
 
 //*************************************************************************************************************
     UpdateSprites:
+        // Inputs : None
+        // Data Destroyed : Acc, X, Y
+        
     {
         lda #0 
         sta CurrentSprite           // Initialise Sprite Counter
@@ -466,15 +757,120 @@
             jsr ApplyExpand         // Set whether its big or not
             jsr ApplyColour         // Apply Colour
 
+            lda Animation.OnDemand,y 
+            beq !ConstantAnimation+ // Is this sprite animated ondemand?
+            jsr ApplyAnimation      // Yes...
+        !ConstantAnimation:
+
             lda #0                  // Reset Modified Flag
             sta Modified,y
 
         !NoNeedToProcess:
+            lda Animation.OnDemand,y
+            bne !OnDemandAnimation+ // Is this Sprite animated constantly ?
+            jsr ApplyAnimation      // Yes
+        !OnDemandAnimation:
             iny                     // Next Sprite
             sty CurrentSprite       // Store Away
             cpy #MaximumNoOfSprites // Have we reached the Maximum
             bcc !UpdateSpriteLoop-  // No, better do it again then
         rts
     }
+
+//*************************************************************************************************************
+    ApplyAnimation:
+    {
+        // Data Destroyed : Acc, X, Y
+        // Inputs : Y = Sprite Number
+
+        //          Save Registry States
+        pha
+        tya
+        pha
+        txa
+        pha
+
+        // swap Sprite Number from Y Register to X Register
+        tya     // Sprite No was
+        tax     // Sprite No is now
+        // X = Sprite Number
+
+        lda Animation.Active,x
+        bne !AnimateSprite+             // IS the sprite currently been animated?
+        jmp SkipAnimation               // No, Skip Animation System
+
+        // Yes currently been animated.
+    !AnimateSprite:
+
+        // Load the frame table location
+        lda Animation.FrameTableLo,x
+        sta FrameTable
+        lda Animation.FrameTableHi,x
+        sta FrameTable + 1
+
+        // Get Current Frame Number
+        ldy Animation.CurrentFrameIndex,x
+        lda FrameTable: $A55E,y         // Get Current Sprite Frame
+        sta SPRITE0,x                   // Store current sprite frame into the Sprite
+
+        dec Animation.Delay,x           // Decrease delay by one
+        bne SkipAnimation               // Have we hit zero yet ?
+
+        // Yes
+        lda Animation.Speed,x
+        sta Animation.Delay,x           // Reset delay back to speed value
+
+        // increase frame index for next sprite frame
+        inc Animation.CurrentFrameIndex,x
+        lda Animation.CurrentFrameIndex,x
+        cmp Animation.NumberOfFrames,x  // Did we hit the end of the animation?
+        bcc SkipAnimation               // No
+
+        // Yes
+        lda Animation.Looping,x         // Is this a looping Animation?
+        beq !StopAnimating+             // No
+
+        // Yes
+        lda #0
+        sta Animation.CurrentFrameIndex,x
+        jmp SkipAnimation
+
+    !StopAnimating:
+        lda #0                          // Turn Off Animation
+        sta Animation.Active,x
+    
+    SkipAnimation:
+        // Restore Register States
+        pla
+        tax
+        pla
+        tay
+        pla
+        rts
+    }
+
 }
+
+//*************************************************************************************************************
+.macro SetAnimation(SpriteNo,Active,FrameTableLo,FrameTableHi,NoOfFrames,Speed,Looping,OnDemand)
+{
+    ldy #SpriteNo                           // Which Sprite To Apply this too
+    lda #Active                             // Is it Active
+    sta libSprites.Animation.Active,y
+    lda #FrameTableLo                       // FrameTable Location
+    sta libSprites.Animation.FrameTableLo,y
+    lda #FrameTableHi                       // FrameTable Location
+    sta libSprites.Animation.FrameTableHi,y
+    lda #Speed                              // How long before frame changes
+    sta libSprites.Animation.Speed,y
+    sta libSprites.Animation.Delay,y
+    lda #Looping                            // Does the animation loop
+    sta libSprites.Animation.Looping,y
+    lda #0
+    sta libSprites.Animation.CurrentFrameIndex,y 
+    lda #NoOfFrames                         // How many frames in the animation
+    sta libSprites.Animation.NumberOfFrames,y
+    lda #OnDemand                           // Ondemad or Constant
+    sta libSprites.Animation.OnDemand,y
+}  
 
