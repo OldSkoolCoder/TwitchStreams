@@ -38,6 +38,7 @@
     msmXPandChanged:    .byte %01000000         // Expanded
                         .byte %10000000
 
+    PhysicalSpriteNo: .fill MaximumNoOfSprites, i
     Enabled:    .fill MaximumNoOfSprites, 0    
     XFrac:      .fill MaximumNoOfSprites, 0    
     XLo:        .fill MaximumNoOfSprites, 0    
@@ -130,7 +131,10 @@
     ApplyEnable:
     {
         // Y = SpriteNumber
+        lda PhysicalSpriteNo,y
         ldx Enabled,y           // Load Enabled Flag From Array
+
+        tay
         lda SpriteMask,y        // Load Sprite Mask
         cpx #0                  // Disabled?
         beq !Disable+           // Yes
@@ -161,7 +165,11 @@
     ApplyFrame:
     {
         // Y = Sprite Number
+        lda PhysicalSpriteNo,y
+        sta ZeroPageTemp
+
         lda Frame,y             // Load Frame from array
+        ldy ZeroPageTemp
         sta SPRITE0,y           // Store in Sprite Pointer
         rts
     }
@@ -179,9 +187,9 @@
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        ldx Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        jsr CopyY               // Copy To Linked Sprite
+        ldx Linked,y
+        bmi !NotLinked+
+        jsr CopyY
     !NotLinked: 
         rts
     }
@@ -201,9 +209,9 @@
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        ldx Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        jsr CopyY               // Copy To Linked Sprite
+        ldx Linked,y
+        bmi !NotLinked+
+        jsr CopyY
     !NotLinked: 
         rts
     }
@@ -227,10 +235,10 @@
 
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
-
-        ldx Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        jsr CopyY               // Copy To Linked Sprite
+        
+        ldx Linked,y
+        bmi !NotLinked+
+        jsr CopyY
     !NotLinked: 
         rts
 
@@ -260,7 +268,9 @@
     {
         // Y = SpriteNumber
 
-        tya
+        lda PhysicalSpriteNo,y
+
+        //tya
         asl     // * 2
         tax  
         lda Y,y             // Load Y Value
@@ -283,9 +293,9 @@
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        ldx Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        jsr CopyX               // Copy To Linked Sprite
+        ldx Linked,y
+        bmi !NotLinked+
+        jsr CopyX
     !NotLinked: 
         rts
     }
@@ -309,9 +319,9 @@
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        ldx Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        jsr CopyX               // Copy To Linked Sprite
+        ldx Linked,y
+        bmi !NotLinked+
+        jsr CopyX
     !NotLinked: 
         rts
     }
@@ -340,9 +350,9 @@
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        ldx Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        jsr CopyX               // Copy To Linked Sprite
+        ldx Linked,y
+        bmi !NotLinked+
+        jsr CopyX
     !NotLinked: 
         rts
 
@@ -374,21 +384,27 @@
     ApplyX:
     {
         // Y = SpriteNumber
+        sty ZeroPageTemp + 1
+        lda PhysicalSpriteNo,y
+        sta ZeroPageTemp
 
-        tya
+        //tya
         asl     // * 2
         tax  
         lda XLo,y           // Load XLo Value
         sta SP0X,x          // Store To Sprite X
 
+        ldy ZeroPageTemp
         lda SpriteMask,y 
         eor #$FF
         and MSIGX           // Mask Out Hi Bit
         sta MSIGX
 
+        ldy ZeroPageTemp + 1
         lda XHi,y 
         beq !DontBother+    // Hi Bit Not Required
 
+        ldy ZeroPageTemp
         lda SpriteMask,y
         ora MSIGX           // Set Hi Bit
         sta MSIGX
@@ -423,16 +439,16 @@
         // Y = SpriteNumber, Acc = Disable (0) / Enabled (1)
 
         sta MColMode,y          // Store MultiColour into the Sprite Array
-        sta ZeroPageTemp        // Temp Storage
+        lda ZeroPageTemp
 
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        lda Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        tay                     // Move To Linked Sprite
-        lda ZeroPageTemp        // Load State
-        jsr SetMultiColour      // Exectute again on linked sprite
+        lda Linked,y
+        bmi !NotLinked+
+        tay
+        lda ZeroPageTemp
+        jsr SetMultiColour
     !NotLinked: 
         rts
 
@@ -441,7 +457,11 @@
     ApplyMultiColour:
     {
         // Y = SpriteNumber
+        lda PhysicalSpriteNo,y
+        sta ZeroPageTemp
+
         ldx MColMode,y         // Load MultiColour Flag From Array
+        ldy ZeroPageTemp
         lda SpriteMask,y       // Load Sprite Mask
         cpx #0                 // Disabled?
         beq !Disable+          // Yes
@@ -484,16 +504,16 @@
         // Y = SpriteNumber, Acc = InFront (0) / Behind (1)
 
         sta Priority,y          // Store Priority into the Sprite Array
-        sta ZeroPageTemp        // Save State
+        sta ZeroPageTemp
 
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        lda Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        tay                     // Move To Linked Sprite
-        lda ZeroPageTemp        // Load State
-        jsr SetPriority         // Execute with linked sprite
+        lda Linked,y
+        bmi !NotLinked+
+        tay
+        lda ZeroPageTemp
+        jsr SetPriority
     !NotLinked: 
         rts
 
@@ -502,7 +522,12 @@
     ApplyPriority:
     {
         // Y = SpriteNumber
+        lda PhysicalSpriteNo,y
+        sta ZeroPageTemp
+
         ldx Priority,y          // Load Priority Flag From Array
+        ldy ZeroPageTemp
+        
         lda SpriteMask,y        // Load Sprite Mask
         cpx #0                  // Infront Of Screen?
         beq !InFrontOfScreen+   // Yes
@@ -570,11 +595,11 @@
         lda #1                  // Load Modified Flag
         sta Modified,y          // Specified Sprite has been Modified
 
-        lda Linked,y            // Load Linked Sprite Number
-        bmi !NotLinked+         // Are we not linked?
-        tay                     // Move To Linked Sprite
-        lda ZeroPageTemp        // Load State
-        jsr SetExpand           // Execute on linked sprite
+        lda Linked,y
+        bmi !NotLinked+
+        tay
+        lda ZeroPageTemp
+        jsr SetExpand
     !NotLinked: 
         rts
 
@@ -583,6 +608,11 @@
     ApplyExpand:
     {
         // Y = SpriteNumber,    00 = None, 01=XBig, 10=YBig, 11=Both
+        sty ZeroPageTemp
+
+        lda PhysicalSpriteNo,y
+        tay
+
         lda SpriteMask,y        // Load Sprite Mask
         eor #$FF                // Filter the Mask Bits 0->1 / 1->0
         and XXPAND              // Mask Off the Sprite Bit
@@ -593,20 +623,28 @@
         and YXPAND              // Mask Off the Sprite Bit
         sta YXPAND
 
+        ldy ZeroPageTemp
         lda Expand,y            // Load Expand Flag From Array
         and #XPandX             // And with X Xpand Flag
         cmp #XPandX             // Are we left with Xpand Flag
         bne !XPandY+            // no 
+
+        lda PhysicalSpriteNo,y
+        tay
 
         lda SpriteMask,y        // Load Sprite Mask
         ora XXPAND              // Or Mask onto Sprite Expand X Byte
         sta XXPAND
 
     !XPandY:
+        ldy ZeroPageTemp
         lda Expand,y            // Load Expand Flag From Array
         and #XPandY             // And with Y Xpand Flag
         cmp #XPandY             // Are we left with Xpand Flag
         bne !Done+              // no
+
+        lda PhysicalSpriteNo,y
+        tay
 
         lda SpriteMask,y        // Load Sprite Mask
         ora YXPAND              // Or Mask onto Sprite Expand Y Byte
@@ -790,7 +828,12 @@
     ApplyColour:
     {
         // Y = Sprite Number
+        lda PhysicalSpriteNo,y
+        sta ZeroPageTemp
+
         lda Colour,y            // Load Colour from array
+
+        ldy ZeroPageTemp
         sta SP0COL,y            // Store in Sprite Colour
         rts
     }
@@ -815,6 +858,19 @@
     }
 
 //*************************************************************************************************************
+    SwapSprites:
+    {
+        // Y = Original Position
+        // X = Proposed Position
+        txa 
+        sta PhysicalSpriteNo,y 
+
+        tya 
+        sta PhysicalSpriteNo,x
+        rts
+    }
+
+//*************************************************************************************************************
     UpdateSprites:
         // Inputs : None
         // Data Destroyed : Acc, X, Y
@@ -831,27 +887,38 @@
             bne !NoNeedToProcess+   // No, then no need to update
 
             jsr ApplyEnable         // Apply the Enabled Flag
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyFrame          // Apply the Frame
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyY              // Apply where on the Y axis
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyX              // Apply where on the X Axis
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyMultiColour    // Set Multi Colour Mode
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyPriority       // Set Priority
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyExpand         // Set whether its big or not
+            ldy CurrentSprite       // Load Sprite Counter
             jsr ApplyColour         // Apply Colour
 
+            ldy CurrentSprite       // Load Sprite Counter
             lda Animation.OnDemand,y 
             beq !ConstantAnimation+ // Is this sprite animated ondemand?
             jsr ApplyAnimation      // Yes...
         !ConstantAnimation:
 
+            ldy CurrentSprite       // Load Sprite Counter
             lda #0                  // Reset Modified Flag
             sta Modified,y
 
         !NoNeedToProcess:
+            ldy CurrentSprite       // Load Sprite Counter
             lda Animation.OnDemand,y
             bne !OnDemandAnimation+ // Is this Sprite animated constantly ?
             jsr ApplyAnimation      // Yes
         !OnDemandAnimation:
+            ldy CurrentSprite       // Load Sprite Counter
             iny                     // Next Sprite
             sty CurrentSprite       // Store Away
             cpy #MaximumNoOfSprites // Have we reached the Maximum
@@ -872,6 +939,8 @@
         txa
         pha
 
+        lda PhysicalSpriteNo,y
+        sta ZeroPageTemp
         // swap Sprite Number from Y Register to X Register
         tya     // Sprite No was
         tax     // Sprite No is now
@@ -893,7 +962,8 @@
         // Get Current Frame Number
         ldy Animation.CurrentFrameIndex,x
         lda FrameTable: $A55E,y         // Get Current Sprite Frame
-        sta SPRITE0,x                   // Store current sprite frame into the Sprite
+        ldy ZeroPageTemp
+        sta SPRITE0,y                   // Store current sprite frame into the Sprite
 
         dec Animation.Delay,x           // Decrease delay by one
         bne SkipAnimation               // Have we hit zero yet ?
