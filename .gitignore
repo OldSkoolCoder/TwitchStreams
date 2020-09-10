@@ -1,4 +1,7 @@
 \bin
 ByteDump.txt
 *.vscode
+*.asminfo.txt
+*.source.txt
+
 
