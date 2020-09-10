@@ -1,8 +1,27 @@
 #import "Constants.asm"
 
+    .const MaximumNoOfSprites = 18
+    .const MAX_MUX_SPRITES = [MaximumNoOfSprites - 2]
+
+* = $0A "Temp Storage" virtual
+
+	TEMP1: .byte $00            // Temp variable used for Sort Routine
+	TEMP2: .byte $00            // Temp variable used for Sort Routine
+
+	VicSpriteIndex:             // Physical Sprite Current Index
+		.byte $00
+
+	SpriteIndex:                // Virtual Sprite Current index
+		.byte $00
+    
+* = $10 "SpriteOrder Array" virtual 
+	SpriteOrder:                // Virtual Sprite Order Sequence
+		.fill MAX_MUX_SPRITES, 0
+
 //--------------------------------------------------------------------------------------------------------
 // Library of functions to apply to sprites for anything.
 
+* =$0810 "MultiPlexor Library"
     .const libSprite_ONDEMAND = 1 
     .const libSprite_CONSTANT = 0 
 
@@ -12,9 +31,11 @@
     .const libSprite_ONCE = 0 
     .const libSprite_LOOPING = 1 
 
+    // Multiplexor Constants
+    .const PADDING = 5
+
 .namespace libSprites 
 {
-    .const MaximumNoOfSprites = 8
     .const XPandX = %00000001 
     .const XPandY = %00000010
 
@@ -37,12 +58,14 @@
     msmPriorityChanged: .byte %00100000         // Priority
     msmXPandChanged:    .byte %01000000         // Expanded
 
+    msmMultiplexorOn:   .byte $80               // Multiplexor enabled / disabled
+
     Enabled:    .fill MaximumNoOfSprites, 0    
     XFrac:      .fill MaximumNoOfSprites, 0    
     XLo:        .fill MaximumNoOfSprites, 0    
     XHi:        .fill MaximumNoOfSprites, 0    
     YFrac:      .fill MaximumNoOfSprites, 0    
-    Y:          .fill MaximumNoOfSprites, 0    
+    Y:          .fill MaximumNoOfSprites, $FF //60 + (i * 10)         // Initialise Y to stagger sprites
     Colour:     .fill MaximumNoOfSprites, 0    
     MColMode:   .fill MaximumNoOfSprites, 0    
     Frame:      .fill MaximumNoOfSprites, 0
@@ -53,9 +76,6 @@
     {
         Active:     .fill MaximumNoOfSprites, 0    
 
-        // QuazzyMCLeft: .byte 4,5,6,7
-        // QuazzyHRLeft: .byte 12,13,14,15
-
         FrameTableLo:       .fill MaximumNoOfSprites, 0    
         FrameTableHi:       .fill MaximumNoOfSprites, 0    
         CurrentFrameIndex:  .fill MaximumNoOfSprites, 0    
@@ -64,8 +84,6 @@
         Looping:            .fill MaximumNoOfSprites, 0    
         NumberOfFrames:     .fill MaximumNoOfSprites, 0
         OnDemand:           .fill MaximumNoOfSprites, 0    
-//        Priority:   .fill MaximumNoOfSprites, 0    
-//        Priority:   .fill MaximumNoOfSprites, 0    
 //        Priority:   .fill MaximumNoOfSprites, 0    
     }
     Modified:   .fill MaximumNoOfSprites, 0    
@@ -91,7 +109,7 @@
         // Inputs : Y = Sprite Number (0-7)
         // Data Destroyed : Acc, Y
 
-        lda #1
+        lda #$80
         jsr SetEnable
         rts
     }
@@ -101,7 +119,7 @@
         // Inputs : Y = Sprite Number (0-7)
         // Data Destroyed : Acc, Y
         
-        lda #0
+        lda #$00
         jsr SetEnable
         rts
     }
@@ -829,6 +847,8 @@
         // Data Destroyed : Acc, X, Y
         
     {
+        jsr Sort
+
         lda #0 
         sta CurrentSprite           // Initialise Sprite Counter
 
@@ -839,6 +859,9 @@
             cmp #1                  // Has this sprite been modified
             bne !NoNeedToProcess+   // No, then no need to update
 
+            cpy #2                  // After phyiscal sprites, only animate virtual sprites
+            bcs !SkipAsLogicalSprite+
+
             jsr ApplyEnable         // Apply the Enabled Flag
             jsr ApplyFrame          // Apply the Frame
             jsr ApplyY              // Apply where on the Y axis
@@ -848,6 +871,7 @@
             jsr ApplyExpand         // Set whether its big or not
             jsr ApplyColour         // Apply Colour
 
+        !SkipAsLogicalSprite:
             lda Animation.OnDemand,y 
             beq !ConstantAnimation+ // Is this sprite animated ondemand?
             jsr ApplyAnimation      // Yes...
@@ -902,6 +926,7 @@
         // Get Current Frame Number
         ldy Animation.CurrentFrameIndex,x
         lda FrameTable: $A55E,y         // Get Current Sprite Frame
+        //sta SPRITE0,x                   // Store current sprite frame into the Sprite
         sta Frame,x                   // Store current sprite frame into the Sprite
 
         dec Animation.Delay,x           // Decrease delay by one
@@ -939,6 +964,253 @@
         pla
         rts
     }
+
+    MultiplexorInit:
+    {
+        sei
+
+		lda #$7f
+		sta $dc0d
+		sta $dd0d
+
+		lda #$35                // Bank Out The ROMS
+		sta $01
+
+		lda #$01
+		sta IRQMSK
+
+
+		lda #$00
+		sta RASTER
+		lda SCROLY
+		and #$7f
+		sta SCROLY
+		lda #<IRQ
+		sta $fffe	 
+		lda #>IRQ
+		sta $ffff
+		asl VICIRQ
+		cli
+
+		//sprite setup
+		lda #$FF            // Enable all the pysical Sprites
+		sta SPENA
+        
+        ldy #MAX_MUX_SPRITES
+    !ResetSort:
+        tya
+        sta SpriteOrder,y   // initalise all Y's
+        dey 
+        bpl !ResetSort-
+        rts
+    }
+
+//*************************************************************************************************************
+    EnableMUX:
+    {
+        // Data Destroyed : Acc
+
+        lda #$00
+        sta msmMultiplexorOn
+        rts
+    }
+
+    DisableMUX:
+    {
+        // Data Destroyed : Acc
+        
+        lda #$80
+        sta msmMultiplexorOn
+        rts
+    }
+
+
+    *=* "IRQ"
+IRQ: {
+		pha
+		txa 
+		pha 
+		tya 
+		pha 
+
+		inc $d020
+
+        lda msmMultiplexorOn
+        bpl LoopStart
+        jmp !ExitRaster+
+
+		LoopStart:
+			lda VicSpriteIndex		    // load Real Sprite#
+			and #$07				    // only 7 allowed
+			cmp #6					    // higher than 6, reset to 0
+			bcc !DoSprite+			    // lower than 6, right use this sprite
+			lda #0					    // reset
+
+		!DoSprite:
+			sta VicSpriteIndex		    // store new real sprite#
+			asl 					    // *2
+			sta SelfMod + 1			    // update self mod jump vector
+		SelfMod:
+			jmp (VicSpriteTable)        // Jump to corresponding Physical Sprite Handler
+
+		SpriteCollection:
+			.for(var i=2; i<8; i++) 
+			{
+			Execute:
+				ldx SpriteIndex			// load virtual sprite index
+				lda SpriteOrder, x		// load virtual sprite offset
+				tax
+
+				lda Enabled+2,x		    // load sprite enabled value
+				bpl !spritedisabled+	// disabled, then jump to disable routine
+				
+			!spriteok:
+				lda Colour+2, x	        // load this virtual sprite colour
+				sta SP0COL + i			// store in real sprite
+                lda Frame+2, x          // load virtual sprite frame
+				sta SPRITE0 + i			// store in real sprite
+
+				lda XHi+2, x		    // get X MSB
+				beq !nomsb+             // No MSB set
+			!msb:
+				lda MSIGX
+				ora #[pow(2,i)]         // Set MSB
+				sta MSIGX
+				jmp !msbdone+
+			!nomsb:
+				lda MSIGX
+				and #[255 - pow(2,i)]   // Clear MSB
+				sta MSIGX
+			!msbdone:
+
+				lda MColMode+2, x		// Get Sprite MultiColour Mode Flag
+				beq !nomc+
+			!mc:
+				lda SPMC
+				ora #[pow(2,i)]         // Set MultCol
+				sta SPMC
+				jmp !mcdone+
+			!nomc:
+				lda SPMC
+				and #[255 - pow(2,i)]   // Clear MultCol
+				sta SPMC
+			!mcdone:
+
+				lda XLo+2, x
+				sta SP0X + i * 2        // Store X Coord
+				lda Y+2, x
+				//sta $d001 + i * 2
+				inc VicSpriteIndex      // Move to next Physical Sprite
+				jmp !UseNextSprite+
+
+			!spritedisabled:
+				lda #0
+
+			!UseNextSprite:
+				sta SP0Y + i * 2        // Set Y Coord
+
+			!spritedisabled:
+				inc SpriteIndex
+				ldx SpriteIndex
+				cpx #MAX_MUX_SPRITES    // Done All Sprites
+				bne !+                  // No
+				jmp !Finish+            // Yes
+			!:
+
+				lda SpriteOrder, x      // Set up for next Raster Test
+				tax
+
+				lda Y+2, x              // Get Next Y
+				sec 
+				sbc #PADDING * 2        // sub padding
+				cmp RASTER              // has Raster Arrived ?
+				bcc !+
+				jmp !nextRaster+
+			!:
+			}	
+			jmp LoopStart
+
+			!nextRaster:
+				clc
+				adc #PADDING
+				sta RASTER
+				jmp !ExitRaster+
+
+		!Finish:
+			lda #$00
+			sta RASTER
+			lda #$00
+			sta VicSpriteIndex
+			sta SpriteIndex
+
+	!ExitRaster:
+		dec $d020
+
+		lda SCROLY
+		and #$7f
+		sta SCROLY
+		asl VICIRQ
+		pla
+		tay 
+		pla 
+		tax
+		pla
+		rti
+    }
+
+    .align $100
+	* = * "VicSpriteTable"
+	VicSpriteTable:
+		.word IRQ.SpriteCollection[0].Execute           // Sprite 2
+		.word IRQ.SpriteCollection[1].Execute           // Sprite 3
+		.word IRQ.SpriteCollection[2].Execute           // Sprite 4
+		.word IRQ.SpriteCollection[3].Execute           // Sprite 5
+		.word IRQ.SpriteCollection[4].Execute           // Sprite 6
+		.word IRQ.SpriteCollection[5].Execute           // Sprite 7
+		//.word IRQ.SpriteCollection[6].Execute
+		//.word IRQ.SpriteCollection[7].Execute
+
+    Sort: {	
+            //inc $d020
+                restart:
+                    //SWIV adapted SORT
+                    ldx #$00					// Start with First Sorted Sprite
+                    txa 						// Clear Acc
+            sortloop:       
+                    ldy SpriteOrder,x 			// Load Virtual Sprite #
+                    cmp Y,y 				    // Comp Acc with Virtual Sprite Y
+                    beq noswap2 				// Are they the same ?
+                    bcc noswap1 				// is the value smaller
+                    stx TEMP1 					// Value must be bigger, Store current sort sprite index
+                    sty TEMP2 					// store Virtual Sprite Index
+                    lda Y,y 				    // Load Accumlator with Virual Sprite Y (New Sort Value)
+                    ldy SpriteOrder - 1,x 		// promote sorted sprite 
+                    sty SpriteOrder,x 
+                    dex 						// move back one sorted sprite
+                    beq swapdone 
+            swaploop:       
+                    ldy SpriteOrder - 1,x 
+                    sty SpriteOrder,x 
+                    cmp Y,y 
+                    bcs swapdone 
+                    dex 
+                    bne swaploop 
+            swapdone:       
+                    ldy TEMP2 					// Load Virtual Sprite Index
+                    sty SpriteOrder, x 			// Store in current sorted Sprite
+                    ldx TEMP1 					// load back Sorted Sprite Index
+                    ldy SpriteOrder, x 			// Load Virtual Sprite Index From Sorted
+            noswap1:
+                    lda Y, y 				    // Load Accumlator with Virual Sprite Y (New Sort Value)
+            noswap2:
+                    inx 						// Move to next Sorted Sprite
+                    cpx #MAX_MUX_SPRITES		// Reach end of Sorted Sprites
+                    bne sortloop 				// No ....
+
+            //dec $d020
+                    rts
+    }
+
 }
 
 //*************************************************************************************************************

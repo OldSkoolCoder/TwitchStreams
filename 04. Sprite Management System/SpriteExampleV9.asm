@@ -3,7 +3,7 @@
 //====================================================================
 BasicUpstart2(start)
 
-#import "libSpritesTrial.asm"
+#import "libSpritesMultiPlex.asm"
 
 //*************************************************************************************************************
 .const QuazzyHiResSprNo = 0
@@ -40,6 +40,7 @@ BasicUpstart2(start)
 .label EsmeraldaRightBase = 206
 .label EsmeraldaLeftBase = 202
 
+* = * "Quazzy Data Storage"
 //*************************************************************************************************************
 JumpArk:
       .byte 0, 254,254,252,252,250,  0,  6,  6,  4,  2,  0 
@@ -100,8 +101,10 @@ _AnimateEsmeraldaHR:
 
 .label AnimateEsmeraldaHRLen = [_AnimateEsmeraldaHR - AnimateEsmeraldaHR]       // Number Of Bytes
 
+* = * "Start Example Code"
 //*************************************************************************************************************
 start:
+
     lda #147
     jsr krljmp_CHROUT
 
@@ -118,6 +121,36 @@ start:
     ldx #EsmerelldaMCSprNo
     jsr libSprites.LinkSprites
 
+    // Adds 7 more Esmerelda's
+    .for(var i=0; i<7; i++) 
+    {
+
+        ldy #4 + (i*2) 
+        ldx #5 + (i*2)
+        jsr libSprites.LinkSprites
+
+        ldy #5 + (i*2)
+        jsr libSprites.SpriteMultiColour       // Enable Multi Colour for Sprite 3
+
+        ldx #190 - (i*10)                        // X Lo
+        lda #0                          // X Hi
+        ldy #4 + (i*2) 
+        jsr libSprites.SetX             // Set Sprite 2 X Values
+
+        lda #90 + (i*15)
+        ldy #4 + (i*2) 
+        jsr libSprites.SetY             // Set Sprite 2 X Values
+
+        ldy #5 + (i*2) 
+        jsr libSprites.SpriteColourBrown // Set Colout For Sprite 3
+
+        SetAnimation(4 + (i*2),libSprite_ACTIVE,<AnimateEsmeraldaHR,>AnimateEsmeraldaHR,AnimateEsmeraldaHRLen,EsmerelldaFrameDelay,libSprite_LOOPING,libSprite_CONSTANT)
+        SetAnimation(5 + (i*2),libSprite_ACTIVE,<AnimateEsmeraldaMC,>AnimateEsmeraldaMC,AnimateEsmeraldaMCLen,EsmerelldaFrameDelay,libSprite_LOOPING,libSprite_CONSTANT)
+
+        ldy #4 + (i*2) 
+        jsr libSprites.SpriteEnable            // Enable Sprite 2
+    }
+    
     lda #SPRITERAM + 8
     ldy #QuazzyHiResSprNo
     jsr libSprites.SetFrame             // Set Sprite 0 Frame
@@ -201,13 +234,19 @@ start:
     SetAnimation(EsmerelldaHiResSprNo,libSprite_ACTIVE,<AnimateEsmeraldaHR,>AnimateEsmeraldaHR,AnimateEsmeraldaHRLen,EsmerelldaFrameDelay,libSprite_LOOPING,libSprite_CONSTANT)
     SetAnimation(EsmerelldaMCSprNo,libSprite_ACTIVE,<AnimateEsmeraldaMC,>AnimateEsmeraldaMC,AnimateEsmeraldaMCLen,EsmerelldaFrameDelay,libSprite_LOOPING,libSprite_CONSTANT)
 
+    // Initialise Multiplexor
+    jsr libSprites.MultiplexorInit
+
+    // Enable Multiplexor
+    jsr libSprites.EnableMUX
+
 //*************************************************************************************************************
 GameLooper:
     lda #240                // Scanline -> A
     cmp RASTER              // Compare A to current raster line
     bne GameLooper
 
-    inc $D020
+    //inc $D020
 
     inc FrameCounter
     lda FrameCounter
@@ -276,8 +315,9 @@ TestForJoystick:
 
 //*************************************************************************************************************
 GameLooperEnd:
-    dec $D020
+    //dec $D020
     jsr libSprites.UpdateSprites
+
     jmp GameLooper
 
 // --------------------------------------------------------------

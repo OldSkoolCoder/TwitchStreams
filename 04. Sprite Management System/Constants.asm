@@ -55,6 +55,7 @@
 .label YXPAND          = $D017
 .label VMCSB           = $D018
 .label VICIRQ          = $D019
+.label IRQMSK          = $D01A 
 .label SPBGPR          = $D01B
 .label SPMC            = $D01C
 .label XXPAND          = $D01D
