@@ -3,5 +3,8 @@ ByteDump.txt
 *.vscode
 *.asminfo.txt
 *.source.txt
+bak
+*.dmp
+
 
 

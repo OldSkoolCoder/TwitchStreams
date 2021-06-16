@@ -7,6 +7,7 @@ These topics are :
 * CharPad and Tile Maps
 * Sprite Multiplexing
 * Screen Smooth Scrolling Left and Right
+* Adding screen animation while the screen scrolls
 
 All these libraries are free to use, for all you budding C64 game developers.
 
