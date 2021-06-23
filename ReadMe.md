@@ -8,6 +8,7 @@ These topics are :
 * Sprite Multiplexing
 * Screen Smooth Scrolling Left and Right
 * Adding screen animation while the screen scrolls
+* Added Quazzy and Jill to the screen, so Quazzy can move around and Jill stays with the scenery
 
 All these libraries are free to use, for all you budding C64 game developers.
 
