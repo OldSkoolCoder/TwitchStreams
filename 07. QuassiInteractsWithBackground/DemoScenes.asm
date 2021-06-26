@@ -219,7 +219,10 @@ EndControls:
     beq !ByPassScroll+
     cmp #1
     bne DirectionLeft
-    dec ScrollScrollingFrameCounter
+
+
+    
+/*     dec ScrollScrollingFrameCounter
     lda ScrollScrollingFrameCounter
     and #%00000111
     sta ScrollScrollingFrameCounter
@@ -234,6 +237,25 @@ EndControls:
     bne !ByPassScroll+
     jsr ScrollLeft
     dec FullScreenScrollPerformed
+ */
+ 
+    dec ScrollScrollingFrameCounter
+    lda ScrollScrollingFrameCounter
+    and #%00000111
+    sta ScrollScrollingFrameCounter
+
+//    lda ScrollScrollingFrameCounter
+    cmp #$07
+    bne !ByPassScrollHereTwo+
+    jsr ScrollLeft
+
+!ByPassScrollHereTwo:
+    lda SCROLX
+    and #%11111000
+    ora ScrollScrollingFrameCounter
+    sta SCROLX
+    jsr MoveJillLeft
+    
     jmp !ByPassScroll+
 
 DirectionLeft:
