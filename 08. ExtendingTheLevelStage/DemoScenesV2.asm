@@ -1,20 +1,11 @@
 #import "Constants.asm"
 BasicUpstart2(start)
 
-// Quazzy Movement
-.label QuazzyDirection = $02A7
-.label SpriteFrameCounter = $02A8
-.label QuazzyFrameCounter = $02A9
-.label Jumping = $02AA
-.label JumpIndex = $02AB
-.label JoystickState = $02AC
-.label QuazzyPreviousDirection = $02AD
-
 .label QuazzyRightMC = SPRITERAM + 0 //170
 .label QuazzyRightHR = SPRITERAM + 8 //170
 .label QuazzyLeftMC = SPRITERAM + 4 //174
 .label QuazzyLeftHR = SPRITERAM + 12 //174
-.label QuazzyJumpRightMC = SPRITERAM + 16 //186
+.label QuazzyJumpRightMC = SPRITERAM + 16 //186F
 .label QuazzyJumpRightHR = SPRITERAM + 24 //186
 .label QuazzyJumpLeftMC = SPRITERAM + 20 //190
 .label QuazzyJumpLeftHR = SPRITERAM + 28 //190
@@ -50,16 +41,18 @@ JumpArk:
 
 JumpAnimationRightHR:
     //.byte 194, 194, 194, 195, 195, 195, 196, 196, 196, 197, 197, 197
-    .byte SPRITERAM + 24, SPRITERAM + 24, SPRITERAM + 24, SPRITERAM + 25
-    .byte SPRITERAM + 25, SPRITERAM + 25, SPRITERAM + 26, SPRITERAM + 26
-    .byte SPRITERAM + 26, SPRITERAM + 27, SPRITERAM + 27, SPRITERAM + 27
+    .byte QuazzyJumpRightHR, QuazzyJumpRightHR, QuazzyJumpRightHR
+    .byte QuazzyJumpRightHR + 1, QuazzyJumpRightHR + 1, QuazzyJumpRightHR + 1
+    .byte QuazzyJumpRightHR + 2, QuazzyJumpRightHR + 2, QuazzyJumpRightHR + 2
+    .byte QuazzyJumpRightHR + 3, QuazzyJumpRightHR + 3, QuazzyJumpRightHR + 3
 _JumpAnimationRightHR:
 
 JumpAnimationLeftHR:
     //.byte 198, 198, 198, 199, 199, 199, 200, 200, 200, 201, 201, 201
-    .byte SPRITERAM + 28, SPRITERAM + 28, SPRITERAM + 28, SPRITERAM + 29
-    .byte SPRITERAM + 29, SPRITERAM + 29, SPRITERAM + 30, SPRITERAM + 30
-    .byte SPRITERAM + 30, SPRITERAM + 31, SPRITERAM + 31, SPRITERAM + 31
+    .byte QuazzyJumpLeftHR, QuazzyJumpLeftHR, QuazzyJumpLeftHR
+    .byte QuazzyJumpLeftHR + 1, QuazzyJumpLeftHR + 1, QuazzyJumpLeftHR + 1
+    .byte QuazzyJumpLeftHR + 2, QuazzyJumpLeftHR + 2, QuazzyJumpLeftHR + 2
+    .byte QuazzyJumpLeftHR + 3, QuazzyJumpLeftHR + 3, QuazzyJumpLeftHR + 3
 _JumpAnimationLeftHR:
 
 .label JumpAnimationLeftHRLen = [_JumpAnimationLeftHR - JumpAnimationLeftHR]       // Number Of Bytes
@@ -68,17 +61,19 @@ _JumpAnimationLeftHR:
 JumpAnimationRightMC:
     //.byte 186, 187, 187, 188, 188, 188, 189, 189, 189, 190, 190, 191
     //.byte 186, 186, 186, 187, 187, 187, 188, 188, 188, 189, 189, 189
-    .byte SPRITERAM + 16, SPRITERAM + 16, SPRITERAM + 16, SPRITERAM + 17
-    .byte SPRITERAM + 17, SPRITERAM + 17, SPRITERAM + 18, SPRITERAM + 18
-    .byte SPRITERAM + 18, SPRITERAM + 19, SPRITERAM + 19, SPRITERAM + 19
+    .byte QuazzyJumpLeftMC, QuazzyJumpLeftMC, QuazzyJumpLeftMC
+    .byte QuazzyJumpLeftMC + 1, QuazzyJumpLeftMC + 1, QuazzyJumpLeftMC + 1
+    .byte QuazzyJumpLeftMC + 2, QuazzyJumpLeftMC + 2, QuazzyJumpLeftMC + 2
+    .byte QuazzyJumpLeftMC + 3, QuazzyJumpLeftMC + 3, QuazzyJumpLeftMC + 3
 _JumpAnimationRightMC:
 
 JumpAnimationLeftMC:
     //.byte 192, 193, 193, 194, 194, 194, 195, 195, 195, 196, 196, 197
     //.byte 190, 190, 190, 191, 191, 191, 192, 192, 192, 193, 193, 193
-    .byte SPRITERAM + 20, SPRITERAM + 20, SPRITERAM + 20, SPRITERAM + 21
-    .byte SPRITERAM + 21, SPRITERAM + 21, SPRITERAM + 22, SPRITERAM + 22
-    .byte SPRITERAM + 22, SPRITERAM + 23, SPRITERAM + 23, SPRITERAM + 23
+    .byte QuazzyJumpLeftHR, QuazzyJumpLeftHR, QuazzyJumpLeftHR
+    .byte QuazzyJumpLeftHR + 1, QuazzyJumpLeftHR + 1, QuazzyJumpLeftHR + 1
+    .byte QuazzyJumpLeftHR + 2, QuazzyJumpLeftHR + 2, QuazzyJumpLeftHR + 2
+    .byte QuazzyJumpLeftHR + 3, QuazzyJumpLeftHR + 3, QuazzyJumpLeftHR + 3
 _JumpAnimationLeftMC:
 
 .label JumpAnimationLeftMCLen = [_JumpAnimationLeftMC - JumpAnimationLeftMC]       // Number Of Bytes
@@ -86,12 +81,12 @@ _JumpAnimationLeftMC:
 
 AnimateQuazzyLeftMC:
     //.byte 174, 175, 176, 177
-    .byte SPRITERAM + 4, SPRITERAM + 5, SPRITERAM + 6, SPRITERAM + 7
+    .byte QuazzyLeftMC, QuazzyLeftMC + 1, QuazzyLeftMC + 2, QuazzyLeftMC + 3
 _AnimateQuazzyLeftMC:
 
 AnimateQuazzyRightMC:
     //.byte 170, 171, 172, 173
-    .byte SPRITERAM + 0, SPRITERAM + 1, SPRITERAM + 2, SPRITERAM + 3
+    .byte QuazzyRightMC, QuazzyRightMC + 1, QuazzyRightMC + 2, QuazzyRightMC + 3
 _AnimateQuazzyRightMC:
 
 .label AnimateQuazzyLeftMCLen = [_AnimateQuazzyLeftMC - AnimateQuazzyLeftMC]      // Number Of Bytes
@@ -99,12 +94,12 @@ _AnimateQuazzyRightMC:
 
 AnimateQuazzyLeftHR:
     //.byte 182, 183, 184, 185
-    .byte SPRITERAM + 12, SPRITERAM + 13, SPRITERAM + 14, SPRITERAM + 15
+    .byte QuazzyLeftHR, QuazzyLeftHR + 1, QuazzyLeftHR + 2, QuazzyLeftHR + 3
 _AnimateQuazzyLeftHR:
 
 AnimateQuazzyRightHR:
     //.byte 178, 179, 180, 181
-    .byte SPRITERAM + 8, SPRITERAM + 9, SPRITERAM + 10, SPRITERAM + 11
+    .byte QuazzyRightHR, QuazzyRightHR + 1, QuazzyRightHR + 2, QuazzyRightHR + 3
 _AnimateQuazzyRightHR:
 
 .label AnimateQuazzyLeftHRLen = [_AnimateQuazzyLeftHR - AnimateQuazzyLeftHR]     // Number Of Bytes
@@ -124,6 +119,15 @@ AnimateJillHR:
 _AnimateJillHR:
 
 .label AnimateJillHRLen = [_AnimateJillHR - AnimateJillHR]       // Number Of Bytes
+
+// Quazzy Movement
+.label QuazzyDirection = $02A7
+.label SpriteFrameCounter = $02A8
+.label QuazzyFrameCounter = $02A9
+.label Jumping = $02AA
+.label JumpIndex = $02AB
+.label JoystickState = $02AC
+.label QuazzyPreviousDirection = $02AD
 
 .label Row = $02B0
 .label Col = $02B1
@@ -178,7 +182,7 @@ start:
     // Quazzy
     ldy #QuazzyHiResSprNo 
     ldx #QuazzyMCSprNo
-    jsr libSprites.LinkSprites
+    jsr libSprites.LinkSprites          // Link HiRes and MC Sprites together
 
     lda #QuazzyRightHR
     ldy #QuazzyHiResSprNo
@@ -196,14 +200,6 @@ start:
     ldy #QuazzyMCSprNo 
     jsr libSprites.SpriteMultiColour    // Enable Multi Colour for Sprite 1
 
-
-    // lda #SPRITERAM + 8
-    // ldy #0
-    // jsr workingSprites.setFrame
-
-    // lda #SPRITERAM
-    // iny
-    // jsr workingSprites.setFrame
 
     // Jill
     ldy #JillHiResSprNo 
@@ -229,93 +225,26 @@ start:
     ldy #JillHiResSprNo
     jsr libSprites.SpriteBehind         // Enable Priority for Sprite 0
 
-    // ldy #JillHiResSprNo
-    // jsr libSprites.SpriteLarge         // Enable Expand for Sprite 2
-
-    // iny
-    // lda #SPRITERAM + 40
-    // jsr workingSprites.setFrame
-
-    // iny
-    // lda #SPRITERAM + 32
-    // jsr workingSprites.setFrame
-
-    // Enabling the First 4 Sprites
-    // lda #15      // %0000 1111
-    // sta SPENA
-
-    // Setting Sprite 1 and 3 to be MultiColour
-    // lda #%00001010
-    // sta SPMC
-
-    // lda #%00001100
-    // sta SPBGPR
-
-    // Setting X Position Of Quazzy
-    // lda #0          // XHi
-    // ldx #80         // XLo
-    // ldy #0          // SpritNo
-    // jsr workingSprites.SetX
-
-    // iny             // SpriteNo.
-    // jsr workingSprites.SetX
-
     ldx #160                         // X Lo
     lda #0                          // X Hi
     ldy #QuazzyHiResSprNo
     jsr libSprites.SetX             // Set Sprite 0 X Values
-
-    // Setting X Position of Jill
-    // ldx #30
-    // lda #1
-    // ldy #2
-    // jsr workingSprites.SetX
-
-    // iny
-    // jsr workingSprites.SetX
 
     ldx #30                        // X Lo
     lda #1                          // X Hi
     ldy #JillHiResSprNo
     jsr libSprites.SetX             // Set Sprite 2 X Values
 
-
-    // Setting Y Position of Quazzy
-    // lda #210
-    // ldy #0
-    // jsr workingSprites.SetY
-    // iny
-    // jsr workingSprites.SetY
-
-    lda #210
+    lda #213
     ldy #QuazzyHiResSprNo
     jsr libSprites.SetY             // Set Sprite 0 Y Values
 
-    // Setting Y Position of Jill
-    // lda #110
-    // iny
-    // jsr workingSprites.SetY
-    // iny
-    // jsr workingSprites.SetY
-
-    lda #110
+    lda #85
     ldy #JillHiResSprNo
     jsr libSprites.SetY             // Set Sprite 2 X Values
 
-    // lda #0
-    // ldy #0
-    // jsr workingSprites.SetColour
-    // ldy #2
-    // jsr workingSprites.SetColour
-
-    // lda #9
-    // ldy #1
-    // jsr workingSprites.SetColour
-    // ldy #3
-    // jsr workingSprites.SetColour
-
     ldy #QuazzyHiResSprNo 
-    jsr libSprites.SpriteColourBlack // Set Colout For Sprite 0
+    jsr libSprites.SpriteColourDarkGrey // Set Colout For Sprite 0
     ldy #JillHiResSprNo
     jsr libSprites.SpriteColourBlack // Set Colout For Sprite 2
 
@@ -348,7 +277,7 @@ start:
 
 
 GameLooper:
-    //sei
+    sei
     lda #90                // Scanline -> A
     cmp RASTER              // Compare A to current raster line
     bne GameLooper
@@ -371,25 +300,6 @@ EndControls:
     cmp #directionRight
     bne DirectionLeft
 
-
-    
-/*     dec ScrollScrollingFrameCounter
-    lda ScrollScrollingFrameCounter
-    and #%00000111
-    sta ScrollScrollingFrameCounter
-
-    lda SCROLX
-    and #%11111000
-    ora ScrollScrollingFrameCounter
-    sta SCROLX
-    jsr MoveJillLeft
-
-    lda ScrollScrollingFrameCounter
-    bne !ByPassScroll+
-    jsr ScrollLeft
-    dec FullScreenScrollPerformed
- */
- 
     dec ScrollScrollingFrameCounter
     lda ScrollScrollingFrameCounter
     and #%00000111
@@ -428,22 +338,7 @@ DirectionLeft:
     jsr MoveJillRight
 
 !ByPassScroll:
-//     lda 197
-//     cmp #scanCode_A
-//     bne TestForDKey
-//     lda #1
-//     sta Direction
-//     jmp EndControls
-
-// TestForDKey:
-//     cmp #scanCode_D
-//     bne Nothing
-//     lda #2
-//     sta Direction
-//     jmp EndControls
-
-Nothing:
-    lda #0
+    lda #directionStoodStill
     sta Direction
 
 !ByPassReSet:
@@ -452,88 +347,20 @@ Nothing:
     jsr Animate.GovernAnimationFrames
 
 !ByPassAnimation:
+    cli
+
     lda #0
     sta FullScreenScrollPerformed
 
     jsr libSprites.UpdateSprites
-
-    //cli
-
+    
     dec $D020
     jmp GameLooper
 
 
 * = * "Quazzy Code"
 SortOutQuazzy:
-//     inc SpriteFrameCounter
-//     lda SpriteFrameCounter
-//     cmp #32
-//     bne JumpingTest
-//     lda #0
-//     sta SpriteFrameCounter
-
-// JumpingTest:
-//     lda Jumping
-//     cmp #1
-//     bne KeyboardTest
-//     jsr JumpCycle
-
-// KeyboardTest:
-//     jsr UpdateJill
-//     lda 197
-//     cmp #scanCode_A
-//     bne TestForDKey
-//     lda #255
-//     sta QuazzyDirection
-//     jmp UpdateQuazzy
-
-// TestForDKey:
-//     cmp #scanCode_D
-//     bne TestForLKey
-//     lda #1
-//     sta QuazzyDirection
-//     jmp UpdateQuazzy
-
-// TestForLKey:
-//     cmp #scanCode_L
-//     bne TestForJoystick
-//     lda #1
-//     sta Jumping
-//     jmp SortOutQuazzyEnd    
-
-// TestForJoystick:
-//     lda CIAPRA
-//     eor #%11111111
-//     sta JoystickState
-//     and #joystickLeft
-//     cmp #joystickLeft
-//     bne !TestRight+
-//     lda #255
-//     sta QuazzyDirection
-//     jmp UpdateQuazzy
-
-// !TestRight:
-//     lda JoystickState
-//     and #joystickRight
-//     cmp #joystickRight
-//     bne !TestUp+
-//     lda #1
-//     sta QuazzyDirection
-//     jmp UpdateQuazzy
-
-// !TestUp:
-//     lda JoystickState
-//     and #joystickUp
-//     cmp #joystickUp
-//     bne SortOutQuazzyEnd
-//     lda #1
-//     sta Jumping
-//     jmp UpdateQuazzy
-
-// SortOutQuazzyEnd:
-//      rts
-
-//    jsr libJoyStick.ReadJoySticks
+    jsr libJoyStick.ReadJoySticks
 
     inc SpriteFrameCounter
     lda SpriteFrameCounter
@@ -550,6 +377,7 @@ JumpingTest:
 
 KeyboardTest:
     lda 197
+    sta $4000
     cmp #scanCode_A
     bne TestForDKey
     lda #directionLeft
@@ -594,7 +422,6 @@ TestForJoystick:
 
 //*************************************************************************************************************
 SortOutQuazzyEnd:
-//    jmp GameLooper
     rts
     
 // --------------------------------------------------------------
@@ -612,26 +439,9 @@ UpdateJill:
 
 // --------------------------------------------------------------
 UpdateQuazzy:
-    //jsr CalculateSpriteFrame
-    // lda QuazzyDirection
-    // bmi GoingLeft
-    // lda Jumping
-    // cmp #1
-    // beq !+
-
     lda QuazzyDirection
     bpl !Next+
     jmp GoingLeft
-
-    // Quazzy Going Right
-    // lda #QuazzyRightMC
-    // clc
-    // adc QuazzyFrameCounter
-    // sta SPRITE0 + 1
-    // lda #QuazzyRightMC + 8
-    // clc
-    // adc QuazzyFrameCounter
-    // sta SPRITE0
 
 !Next:
     lda Jumping
@@ -647,8 +457,6 @@ UpdateQuazzy:
     sta QuazzyPreviousDirection
 
 !:
-    // lda SP0X
-    // cmp #254
     ldy #QuazzyHiResSprNo
     jsr libSprites.GetX
     cpx #254
@@ -667,28 +475,12 @@ UpdateQuazzy:
     ldy #QuazzyHiResSprNo
     jsr libSprites.AddToX               // Update Sprite 0 X
 
-    // inc SP0X
-    // inc SP0X + 2
     jmp SortOutQuazzyEnd
 
 GoingLeft:
-    // Quazzy Going Left
-    // lda Jumping
-    // cmp #1
-    // beq !+
-
     lda Jumping
     cmp #jmpSt_StartJumping
     bcs !+
-
-    // lda #QuazzyLeftMC
-    // clc
-    // adc QuazzyFrameCounter
-    // sta SPRITE0 + 1
-    // lda #QuazzyLeftMC + 8
-    // clc
-    // adc QuazzyFrameCounter
-    // sta SPRITE0
 
     // Setting Up Quazzy's Animation
     lda QuazzyPreviousDirection
@@ -699,8 +491,6 @@ GoingLeft:
     sta QuazzyPreviousDirection
 
 !:
-    // lda SP0X
-    // cmp #80
     ldy #QuazzyHiResSprNo
     jsr libSprites.GetX
     cpx #80
@@ -715,9 +505,6 @@ GoingLeft:
     jmp SortOutQuazzyEnd
 
 !NotScrollScreen:
-    // dec SP0X
-    // dec SP0X + 2
-
     lda #0                              // X Hi
     ldx #1                              // X Lo
     ldy #QuazzyHiResSprNo
@@ -752,32 +539,6 @@ JumpCycle:
     inc JumpIndex
     ldx JumpIndex
     cpx #12
-//     beq !EndJump+
-//     lda SP0Y
-//     clc
-//     adc JumpArk,x 
-//     sta SP0Y
-//     sta SP0Y + 2
-
-//     lda QuazzyDirection
-//     bmi LeftAni
-//     lda JumpAnimationRight,x 
-//     jmp !+
-
-// LeftAni:
-//     lda JumpAnimationLeft,x 
-// !:
-//     sta SPRITE0 + 1
-//     clc
-//     adc #8
-//     sta SPRITE0
-//     rts
-
-// !EndJump:
-//     lda #0
-//     sta JumpIndex
-//     sta Jumping
-
     bne !Jump+
     jmp !EndJump+
 
@@ -855,50 +616,21 @@ MoveJillLeft:
     lda #0
     jsr libSprites.SubFromX
 
-//     sec
-//     lda workingSprites.XLo + 2
-//     sbc #1
-//     sta workingSprites.XLo + 2
-//     bcs !ByPass+
-//     dec workingSprites.XHi + 2
-// !ByPass:
-//     lda workingSprites.XHi + 2
-//     ldx workingSprites.XLo + 2
-//     ldy #2
-//     jsr workingSprites.SetX
-//     iny
-//     jsr workingSprites.SetX
-
-    //lda workingSprites.XHi + 2
     ldy #JillHiResSprNo
     jsr libSprites.GetX
     // test bit 7 of Acc = xHi
     bpl !ReEnable+
-    // lda #0
-    // ldy #2
-    // jsr workingSprites.SetEnable
-    // iny
-    // lda #0
-    // jsr workingSprites.SetEnable
     ldy #JillHiResSprNo
     jsr libSprites.SpriteDisable
     jmp !ByPassEnable+
 !ReEnable:
-    //lda workingSprites.XHi + 2
     cmp #1
     beq !DoLowTest+
     bcs !ByPassEnable+
     bcc !ByPassEnable+
 !DoLowTest:
-    //lda workingSprites.XLo + 2
     cpx #$5E
     bcs !ByPassEnable+
-    // lda #1
-    // ldy #2
-    // jsr workingSprites.SetEnable
-    // lda #1
-    // iny
-    // jsr workingSprites.SetEnable
     ldy #JillHiResSprNo
     jsr libSprites.SpriteEnable
 
@@ -911,21 +643,6 @@ MoveJillRight:
     lda #0
     jsr libSprites.AddToX
 
-//     clc
-//     lda workingSprites.XLo + 2
-//     adc #1
-//     sta workingSprites.XLo + 2
-//     bcc !ByPass+
-//     inc workingSprites.XHi + 2
-// !ByPass:
-//     lda workingSprites.XHi + 2
-//     ldx workingSprites.XLo + 2
-//     ldy #2
-//     jsr workingSprites.SetX
-//     iny
-//     jsr workingSprites.SetX
-
-//    lda workingSprites.XHi + 2
     ldy #JillHiResSprNo
     jsr libSprites.GetX
     // Test xHi
@@ -933,30 +650,19 @@ MoveJillRight:
     bcc !ReEnable+
     beq !DoLoTest+
     bcs !Disable+
+
 !DoLoTest:
-//    lda workingSprites.XLo + 2
     cpx #$5E
     bcc !ReEnable+
+
 !Disable:
-    // lda #0
-    // ldy #2
-    // jsr workingSprites.SetEnable
-    // lda #0
-    // iny
-    // jsr workingSprites.SetEnable
     ldy #JillHiResSprNo
     jsr libSprites.SpriteDisable
     jmp !ByPassEnable+
+
 !ReEnable:
-    //lda workingSprites.XHi
     cmp #00
     bne !ByPassEnable+
-    // lda #1
-    // ldy #2
-    // jsr workingSprites.SetEnable
-    // lda #1
-    // iny
-    // jsr workingSprites.SetEnable
     ldy #JillHiResSprNo
     jsr libSprites.SpriteEnable
 
@@ -1182,7 +888,7 @@ DrawTile:
     beq EndDrawColumnLoop
     jmp DrawColumnLoop
 
- EndDrawColumnLoop:  
+EndDrawColumnLoop:  
     LIBMATH_ADD8BITTO16BIT_AV(MapTile,$14)
 
     LIBMATH_ADD8BITTO16BIT_AV(Screen,$28)
@@ -1238,54 +944,6 @@ EndDrawRowLoop:
     bne !Tile-
 }
 
-    // inc ScrollingFrameCounter        // increase frame counter
-    // lda ScrollingFrameCounter
-    // and #127                // Only count 0 -> 127 (128 cycles)
-    //cmp #128                // 4 second frame counter (4 frames = .5 secs per frame)
-    //bne AnimateBell
-    //lda #0                  // reset frame
-    // sta ScrollingFrameCounter
-
-// AnimateBell:
-    //jsr CalculateBellFrame  // work out which frame the bell is currently on
-
-    //cmp BellScrollingFrameCounter    // Bell Frame Counter same as before, no need to re-draw frame
-    //bne DrawBellFrame
-//     jmp EvaluateSpriteControl
-
-// DrawBellFrame:
-//     sta BellScrollingFrameCounter
-
-//     lda #0
-//     sta ZeroPageLow
-//     sta ZeroPageLow + 1
-    
-//     ldx BellScrollingFrameCounter
-//     lda BellAnimationTiles,x    // get bell tile frame for the frame counter
-//     sta TileNumber
-
-//     sta ZeroPageLow             // work out tile character offset
-//     asl ZeroPageLow             // * 2
-//     rol ZeroPageLow + 1
-//     asl ZeroPageLow
-//     rol ZeroPageLow + 1         // * 4
-
-//     clc 
-//     lda #<MAP_TILES             // add offset to Map Tiles Address Location
-//     adc ZeroPageLow
-//     sta ZeroPageLow
-//     lda #>MAP_TILES
-//     adc ZeroPageLow + 1
-//     sta ZeroPageLow + 1
-
-//     DrawTile(ZeroPageLow, $4162, $D962)     // Draw Tile
-
-//     LIBMATH_ADD8BITTO16BIT_AV(ZeroPageLow,$04)  
-//     inc TileNumber
-//     DrawTile(ZeroPageLow, $4164, $D964)     // Draw Next Tile
-
-// EvaluateSpriteControl:
-
 * = * "Scroll Right"
 ScrollRight:
 {
@@ -1316,21 +974,6 @@ RowColumnCollection:
             lda StartOfScrollingColour + (row * 40) + col
             sta StartOfScrollingColour + (row * 40) + col + 1
         }
-
-    //     ldy #38
-    // !ColumnLooper:
-    //     lda StartOfScrollingScreen + (row * 40),y
-    //     iny
-    //     sta StartOfScrollingScreen + (row * 40),y
-    //     dey
-
-    //     lda StartOfScrollingColour + (row * 40),y
-    //     iny
-    //     sta StartOfScrollingColour + (row * 40),y
-    //     dey
-
-    //     dey
-    //     bpl !ColumnLooper-
 
         pla
         sta StartOfScrollingColour + (row * 40)
@@ -1441,10 +1084,6 @@ Animate:
 
     !ByPassFlameReDefine:
         rts
-
-
-
-
 
     // Input Registers:
     // A = Frame Number
