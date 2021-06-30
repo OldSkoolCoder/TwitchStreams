@@ -9,6 +9,7 @@ These topics are :
 * Screen Smooth Scrolling Left and Right
 * Adding screen animation while the screen scrolls
 * Added Quazzy and Jill to the screen, so Quazzy can move around and Jill stays with the scenery
+* Added New Map and re-wrote the code to use the more sophisticated sprite library for when we use the multiplexor
 
 All these libraries are free to use, for all you budding C64 game developers.
 
