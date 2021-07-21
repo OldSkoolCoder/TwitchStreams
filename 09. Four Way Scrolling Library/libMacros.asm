@@ -102,3 +102,25 @@
         lda ScreenRowAddressHi,x
         sta ZPLocation + 1
     }
+
+.macro mClearScreen(ScreenAddr1, SpaceChar){
+
+    // Shift Characters Left One Column
+
+        sta RegAcc
+        stx RegX
+
+        ldx #39
+    !ShiftLooper:
+        .for (var row=0; row<25; row++) {
+            lda #SpaceChar
+            sta ScreenAddr1 + (row * 40),x
+        }
+        
+        dex
+        bpl !ShiftLooper-
+
+        ldx RegX: #$FF
+        lda RegAcc: #$FF
+        
+}

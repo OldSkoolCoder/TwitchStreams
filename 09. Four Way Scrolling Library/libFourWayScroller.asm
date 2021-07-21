@@ -10,8 +10,10 @@
 .const ScrollerUP       = %00000100             // Scroll Up, Character Go Down
 .const ScrollerDOWN     = %00001000             // Scroll Down, Character Go Up
 
-.const ScreenRowTop     = 5                     // Top Row of Scrollable Screen
-.const ScreenRowBottom  = 24                    // Bottom Row of Scrollable Screen
+.const ScreenRowTop     = 0                     // Top Row of Scrollable Screen
+.const ScreenRowBottom  = 19                    // Bottom Row of Scrollable Screen
+
+.const ScreenCharSPACE = 0
 
 .namespace libScroller {
     
@@ -23,6 +25,7 @@
 
     ScrollDirectionRequested:   .byte 0         // Scroll Direction Requested
     ScrollDirectionMovement:    .byte 0         // Scroll Direction Actioning
+    ScrollDirectionScene:       .byte 0
     ScrollXFrameCounter:        .byte 0         // Current X Axis Scroll Value 0 -> 7
     ScrollYFrameCounter:        .byte 0         // Current Y Axis Scroll Value 0 -> 7
 
@@ -66,6 +69,18 @@
 
 
 // ******************************************************************************************************
+    InitialiseScroller:{
+        lda SCROLX                          // Get Current VIC Scroll X Value
+        and #%11111000                      // Reset
+        ora #4
+        sta SCROLX                          // Set VIC Scroll X Value
+
+        // lda SCROLY                          // Get Current VIC Scroll Y Value
+        // and #%11111000                      // Reset
+        // ora #4
+        // sta SCROLY                          // Set VIC Scroll Y Value
+    }
+
     ProcessScroller:{
         lda ScrollDirectionRequested
         cmp #ScrollerSTOP               // Check for no direction desired
@@ -75,30 +90,40 @@
         cmp #ScrollerLEFT               // Requested Scroll To The Left
         bne !FinishScrollRight+
 
-        jsr ShiftScreenLeft             // Copy and Shift Left the Shadow Screen
-        jsr EvaluateBufferLeft          // Evaluate the Column for Right hand Side
-        jsr DrawBufferLeft              // Draw the Column Right hand Side Shadow Screen
+        lda ScrollXFrameCounter
+        cmp #3
+        bne !+
 
         lda #ScrollerSTOP
         sta ScrollDirectionMovement
-        rts
+        jmp !FinishScrollUp+
+
+    !:  
+        lda #ScrollerLEFT
+        jmp ManualScrollScreen
 
     !FinishScrollRight:
-        lda ScrollDirectionMovement
-        cmp #ScrollerLEFT               // Requested Scroll To The Left
+        cmp #ScrollerRIGHT               // Requested Scroll To The Left
         bne !FinishScrollUp+
 
-        jsr ShiftScreenRight             // Copy and Shift Left the Shadow Screen
-        jsr EvaluateBufferRight          // Evaluate the Column for Right hand Side
-        jsr DrawBufferRight              // Draw the Column Right hand Side Shadow Screen
+        lda ScrollXFrameCounter
+        cmp #4
+        bne !+
 
         lda #ScrollerSTOP
         sta ScrollDirectionMovement
+        jmp !FinishScrollUp+
 
-!FinishScrollUp:
+    !:  
+        lda #ScrollerRIGHT
+        jmp ManualScrollScreen
+
+    !FinishScrollUp:
         rts
 
+    ManualScrollScreen:
     !ScrollLeft:
+        sta ScrollDirectionScene
         cmp #ScrollerLEFT               // Requested Scroll To The Left
         beq !LeftScroll+
         jmp !ScrollRight+
@@ -139,8 +164,6 @@
         //jmp !LFrameIgnore+
 
     !LFrameIgnore:                      // Any Other Frame
-        lda ScrollDirectionRequested
-        sta ScrollDirectionMovement
         jmp !XScrollNothing+
 
     !ScrollRight:
@@ -164,6 +187,7 @@
     !RFrame6:
         cmp #6                              // Frame 6
         bne !RFrame7+
+        dec ScreenLHCol
         jsr EvaluateBufferRight             // Evaluate the Column for Left hand Side
         jmp !RFrameIgnore+
 
@@ -178,23 +202,27 @@
         bne !RFrameIgnore+
 
         jsr ScreenSwitcher                  // Switch from Current Screen to Shadow Screen
-        dec ScreenLHCol
+        // dec ScreenLHCol
         jsr ShiftColourRight                // Shift Right the Colour Screen
         jsr DrawColourBufferRight           // Draw New Colour Column
         //jmp !RFrameIgnore+
 
     !RFrameIgnore:                          // Any Other Frame
-        lda ScrollDirectionRequested
-        sta ScrollDirectionMovement
         //jmp !ScrollNothing+
 
     !XScrollNothing:
+        lda ScrollDirectionRequested
+        cmp #ScrollerSTOP
+        beq !ByPass+
+        sta ScrollDirectionMovement
+    !ByPass:
+
         lda SCROLX                          // Get Current VIC Scroll X Value
         and #%11111000                      // Reset
         ora ScrollXFrameCounter             // Apply X Scroll Frame
         sta SCROLX                          // Set VIC Scroll X Value
 
-        lda ScrollDirectionRequested
+        lda ScrollDirectionScene
         cmp #ScrollerLEFT                   // Requested Left Scroll
         bne !HardwareScrollRight+
 
@@ -320,7 +348,7 @@
         sta SCREEN2RAM
         sta SCREENRAM
 
-        lda ScrollDirectionRequested
+        lda ScrollDirectionScene
         cmp #ScrollerUP
         bne !HardwareScrollDown+
 
@@ -756,8 +784,7 @@
         rts
     }
 
-    WorkOutMapCol:
-    {
+    WorkOutMapCol:{
         clc
         lda ScreenLHCol
         ror             // Divide By 2

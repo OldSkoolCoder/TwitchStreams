@@ -187,8 +187,19 @@ start:
     lda #GREY
     sta BGCOL2
 
+    mClearScreen(SCREENRAM, ScreenCharSPACE)
+    mClearScreen(SCREEN2RAM, ScreenCharSPACE)
+
     // Draw First Frame Of the Map
     jsr DrawScreen          // Draw Map on the Screen
+
+    ldy #119
+!Looper:
+    lda SCREENRAM + (17*40),y
+    sta SCREENRAM + (20*40),y
+    sta SCREEN2RAM + (20*40),y
+    dey
+    bpl !Looper-
 
     // Quazzy
     ldy #QuazzyHiResSprNo 
@@ -246,11 +257,11 @@ start:
     ldy #JillHiResSprNo
     jsr libSprites.SetX             // Set Sprite 2 X Values
 
-    lda #213
+    lda #173
     ldy #QuazzyHiResSprNo
     jsr libSprites.SetY             // Set Sprite 0 Y Values
 
-    lda #101
+    lda #60
     ldy #JillHiResSprNo
     jsr libSprites.SetY             // Set Sprite 2 X Values
 
@@ -286,6 +297,8 @@ start:
     SetAnimation(JillHiResSprNo,libSprite_ACTIVE,<AnimateJillHR,>AnimateJillHR,AnimateJillHRLen,JillFrameDelay,libSprite_LOOPING,libSprite_CONSTANT)
     SetAnimation(JillMCSprNo,libSprite_ACTIVE,<AnimateJillMC,>AnimateJillMC,AnimateJillMCLen,JillFrameDelay,libSprite_LOOPING,libSprite_CONSTANT)
 
+    jsr libScroller.InitialiseScroller
+
     lda #4
     sta libScroller.ScrollYFrameCounter
     sta libScroller.ScrollXFrameCounter
@@ -295,7 +308,6 @@ start:
 
     lda #$40
     sta libScroller.CurrentScreenHi
-
 
     // Map Init
     lda #0
@@ -308,11 +320,26 @@ start:
 
 GameLooper:
     sei
-    lda #245                // Scanline -> A
+
+    lda #210                // Scanline -> A
+!RasterLooper:
     cmp RASTER              // Compare A to current raster line
-    bne GameLooper
+    bcs !RasterLooper-
 
+    lda SCROLX
+    sta FrameXScroll
+    lda #$0
+    sta SCROLX
 
+    lda #235                // Scanline -> A
+!RasterLooper:
+    cmp RASTER              // Compare A to current raster line
+    bne !RasterLooper-
+
+    lda FrameXScroll: #$FF
+    sta SCROLX
+
+    //inc $D020
     lda #ScrollerSTOP
     sta libScroller.ScrollDirectionRequested
 
@@ -325,6 +352,7 @@ GameLooper:
     cli
 
     jsr libSprites.UpdateSprites
+    //dec $D020
     
     jmp GameLooper
 
@@ -438,7 +466,7 @@ UpdateQuazzy:
     // lda #1
     // sta Direction
     lda libScroller.ScreenLHCol
-    cmp #42
+    cmp #40
     bne !+
     jmp SortOutQuazzyEnd
 
@@ -482,7 +510,8 @@ GoingLeft:
     // lda #2
     // sta Direction
     lda libScroller.ScreenLHCol
-    bpl !+
+    cmp #0
+    bne !+
     jmp SortOutQuazzyEnd
 
 !:
@@ -803,14 +832,14 @@ CalculateBellFrame:
     rts
 
 DrawScreen:
-    lda #<SCREENRAM + (5*40) 
+    lda #<SCREENRAM //+ (5*40) 
     sta Screen
-    lda #>SCREENRAM + (5*40) 
+    lda #>SCREENRAM //+ (5*40) 
     sta Screen + 1
 
-    lda #<COLOURRAM + (5*40) 
+    lda #<COLOURRAM //+ (5*40) 
     sta Colour
-    lda #>COLOURRAM + (5*40) 
+    lda #>COLOURRAM //+ (5*40) 
     sta Colour + 1
 
     lda #<MAP_1 //+ (3 * 50)
