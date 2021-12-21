@@ -5,6 +5,12 @@ ByteDump.txt
 *.source.txt
 bak
 *.dmp
+*.dbg
+*.pdf
+*.prg
+
+
+
 
 
 
