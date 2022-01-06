@@ -12,7 +12,7 @@ KeyboardMatrix:
 
 Start:
     ldy #$7
-    lda #$FF                    // $FF = %11111111 = because by default all lines are "High" = 1
+    lda #$FF                    // $FF = %11111111 = because by default all lines are "Low" = 1
 !Loop:
     sta KeyboardMatrix,y
     dey
@@ -25,7 +25,7 @@ Start:
     stx CIDDRB
 
 KeyLoop:
-    lda #%11111111
+    lda #%11111111              // Remember 1 = Low, 0 = High (reverse to common sense) lol
     clc
 
     ScanKeyboard(KeyboardMatrix)
