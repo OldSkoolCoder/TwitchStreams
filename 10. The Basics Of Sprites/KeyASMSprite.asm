@@ -37,7 +37,7 @@ KEY = $02AC
 ; %01000000 = 1/4
 ; %00010000 = 1/16
 
-INCREMENT = %00000110
+INCREMENT = %00001000   ; 1
 
 KEYBOARD = $C5
 
@@ -66,9 +66,9 @@ KEYBOARD = $C5
 
 ReadKeys
 
-;    lda #$fb
-;    cmp $D012
-;    bne ReadKeys
+    ;lda #$fb
+    ;cmp $D012
+    ;bne ReadKeys
 
     lda KEYBOARD
     cmp #64

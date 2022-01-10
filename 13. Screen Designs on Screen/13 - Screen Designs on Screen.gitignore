@@ -1,0 +1,6 @@
+# Created with CBM prg Studio
+*.prg
+bak
+*.dbg
+*.dmp
+*.dup

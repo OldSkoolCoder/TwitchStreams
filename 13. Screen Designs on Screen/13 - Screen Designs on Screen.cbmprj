@@ -4,7 +4,7 @@
 <!-- Project Target : C64 -->
 <Project>
     <Target>2</Target>
-    <Executable>10 - sprites.prg</Executable>
+    <Executable>13 - screen designs on screen.prg</Executable>
     <StartAddress>2049</StartAddress>
     <FilesGlobal>False</FilesGlobal>
     <BatchMode>False</BatchMode>
@@ -15,10 +15,10 @@
     <Comments />
     <Author />
     <Email />
-    <AutoLaunchName>10 - sprites.prg</AutoLaunchName>
+    <AutoLaunchName>13 - screen designs on screen.prg</AutoLaunchName>
     <NoSingleFileBuild>False</NoSingleFileBuild>
-    <CreatedWithVersion />
-    <HasGitRepo>False</HasGitRepo>
+    <CreatedWithVersion>CBM prg Studio 4.0.0 BETA 9</CreatedWithVersion>
+    <HasGitRepo>True</HasGitRepo>
     <GitIgnoreList />
     <UsingKickAssembler>False</UsingKickAssembler>
     <KickOutputFile />
@@ -44,32 +44,21 @@
         <PostBuildCommands />
     </BuildEvents>
     <BuildList>
-        <FileName>Main.bas</FileName>
-        <FileName>main.bas</FileName>
-        <FileName>KeyBoard.bas</FileName>
-        <FileName>KeyASMSprite.asm</FileName>
+        <FileName>Demo1.asm</FileName>
+        <FileName>Demo2.asm</FileName>
+        <FileName>Demo3.asm</FileName>
+        <FileName>Demo 4.asm</FileName>
     </BuildList>
     <DetermineBuildOrder>0</DetermineBuildOrder>
     <PaddingByte>0</PaddingByte>
     <!--Screen designer settings-->
-    <AssyBinaryFileLocation />
+    <AssyBinaryFileLocation>Screens.bin</AssyBinaryFileLocation>
     <AssyExportList />
     <RawExportList />
     <!--End of screen designer settings-->
     <SourceFiles>
         <SourceFile>
-            <Name>3DMaze.spt</Name>
-            <PrgName />
-            <FileType>7</FileType>
-            <IncludeInBuild>True</IncludeInBuild>
-            <Regions />
-            <Breakpoints />
-            <Bookmarks />
-            <Topmost>False</Topmost>
-            <FileOpen>False</FileOpen>
-        </SourceFile>
-        <SourceFile>
-            <Name>KeyASMSprite.asm</Name>
+            <Name>Demo 4.asm</Name>
             <PrgName />
             <FileType>2</FileType>
             <IncludeInBuild>True</IncludeInBuild>
@@ -80,9 +69,9 @@
             <FileOpen>True</FileOpen>
         </SourceFile>
         <SourceFile>
-            <Name>KeyBoard.bas</Name>
+            <Name>Demo1.asm</Name>
             <PrgName />
-            <FileType>1</FileType>
+            <FileType>2</FileType>
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
             <Breakpoints />
@@ -91,9 +80,42 @@
             <FileOpen>True</FileOpen>
         </SourceFile>
         <SourceFile>
-            <Name>main.bas</Name>
+            <Name>Demo2.asm</Name>
             <PrgName />
-            <FileType>1</FileType>
+            <FileType>2</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>True</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>Demo3.asm</Name>
+            <PrgName />
+            <FileType>2</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>True</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>Intro2.sdd</Name>
+            <PrgName />
+            <FileType>9</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>False</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>NewLandScapeV2.sdd</Name>
+            <PrgName />
+            <FileType>9</FileType>
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
             <Breakpoints />
