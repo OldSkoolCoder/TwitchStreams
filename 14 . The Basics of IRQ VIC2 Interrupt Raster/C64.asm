@@ -107,3 +107,7 @@ IRQ:
     pla
 
     rti
+
+// Sprite = 192
+* = $3000
+.fill 64, 255
