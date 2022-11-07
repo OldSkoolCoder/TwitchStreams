@@ -1,0 +1,18 @@
+{
+    "folders": [
+		{
+			"path": "."
+		}
+    ],
+	"settings": {
+        "files.autoSave": "afterDelay",
+        "editor.acceptSuggestionOnEnter": "off",
+        "editor.fontSize": 22,
+        "files.associations": {
+            "*.asm": "kickassembler"
+		},
+		"kickassembler.emulator.runtime": "C:\\Program Files\\WinVICE-3.4-GTK3\\x64sc.exe",
+		"kickassembler.startup": "C64.asm",
+        "kickassembler.assembler.option.outputDirectory": "Bin"
+	}
+}

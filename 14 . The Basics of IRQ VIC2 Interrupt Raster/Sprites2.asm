@@ -3,6 +3,7 @@ BasicUpstart2(Start)
 #import "Constants.asm"
 #import "libKeyboard.asm"
 
+* = * "Storage"
 KeyPressed: .byte 0
 LastKeyPressed: .byte 0
 
@@ -34,6 +35,7 @@ SpritesY:
 
 SpriteMSB: .fill 8,0
 
+* = * "Code"
 Start:
     sei
     lda #BLACK
@@ -100,6 +102,7 @@ Start:
     jmp !Looper-
 
 
+* = * "Irq Code"
 IRQ:
     pha
     txa
