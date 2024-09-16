@@ -5,10 +5,17 @@ BasicUpstart(GameStart)
 
 .label VICStart = $9000
 .label VICR5 = VICStart + 5
+.label VICRC = VICStart + $C
+.label VICRD = VICStart + $D
+.label VICRE = VICStart + $E
 .label VICRF = VICStart + $F
 .label VIC_RASTER          = $9004
 
 .const RASTERLINE               = 150
+
+// UnExpaned and 3K VIC
+// Screen Starts at $1E00
+// Colour Ram Starts at $9600
 
 // 9000 36864-37125 6560 Video Interface Chip
 //                      A interlace mode (0 off, 1 on)
@@ -49,6 +56,13 @@ GameStart:
     lda #$93
     jsr $FFD2       // Clearing The Screen
 
+    lda #101 + 128
+    sta VICRD       // Noise 
+    //sta VICRC
+
+    lda #$0F
+    sta VICRE
+
 GameLoop:
 RasterLooper:
     jsr WaitForRaster
@@ -69,7 +83,11 @@ RasterLooper:
 
 !Dead:
     lda #$04
-    jsr DrawCar + 2
+    jsr DrawCar.StoreChar
+
+    lda #$00
+    sta VICRE
+
     jmp *
 
     rts
@@ -252,9 +270,20 @@ VIA:{
     
     DrawCar:
     {
+        ldy #0          // Column Counter
+    !ColLoop:
+        lda #1
+        sta $97E4,y
+        iny
+        cpy #22
+        bne !ColLoop-
+
         lda #$02
+    StoreChar:
         ldy Storage.CarPosition
         sta $1FE4,y
+
+        sta $97E4,y
         rts
     }
 
