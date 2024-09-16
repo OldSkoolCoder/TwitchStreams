@@ -1,0 +1,22 @@
+{
+    "folders": [
+		{
+			"path": "."
+		},
+        {
+            "path": "../bin"
+        }
+],
+	"settings": {
+        "files.autoSave": "afterDelay",
+        "editor.acceptSuggestionOnEnter": "off",
+        "editor.fontSize": 22,
+        "files.associations": {
+            "*.asm": "kickassembler"
+		},
+		"kickassembler.emulator.runtime": "C:\\Program Files\\WinVICE-3.5-GTK3\\bin\\xvic.exe",
+		"kickassembler.startup": "VIC20.asm",
+		"kickassembler.assembler.option.outputDirectory": "..\\Bin",
+        "kickassembler.emulator.options": "-autostart ${kickassembler:buildFilename} -memory 3k"
+	}
+}

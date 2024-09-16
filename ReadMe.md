@@ -14,6 +14,12 @@ These topics are :
 * Basics of Sprite Hardware Collisions
 * The Basics of CIA Keyboard detections
 * Exporting Screens from CBM Prg Studio
+* Basic C64 VIC2 IRA Interrupts
+* Simulating Acceleration and Deceleration
+* Understanding State Machines
+* Working With Files
+* Binary Fractions
+* How To .... VIC 20, build a simple Stunt Car Racer game
 
 All these libraries are free to use, for all you budding C64 game developers.
 
